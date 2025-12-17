@@ -9,8 +9,10 @@ import (
 type ErrorSeverity string
 
 const (
-	SeverityWarning ErrorSeverity = "warning"
-	SeveritySevere  ErrorSeverity = "severe"
+	SeverityHint    ErrorSeverity = "hint"    // Best practices, optimizations
+	SeverityInfo    ErrorSeverity = "info"    // Data quality issues, suggestions
+	SeverityWarning ErrorSeverity = "warning" // Unlikely but possible situations
+	SeveritySevere  ErrorSeverity = "severe"  // Impossible situations, must fix
 )
 
 // GedcomError represents a GEDCOM parsing/validation error
@@ -124,6 +126,3 @@ func (em *ErrorManager) Count() int {
 	defer em.mu.RUnlock()
 	return len(em.errors)
 }
-
-
-

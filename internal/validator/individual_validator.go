@@ -85,7 +85,7 @@ func (iv *IndividualValidator) validateIndividual(xrefID string, record gedcom.R
 
 // validateStructure validates the structure and tags of an individual record.
 func (iv *IndividualValidator) validateStructure(xrefID string, record gedcom.Record) {
-	config := ValidationConfig{
+	config := BasicValidationConfig{
 		RecordTypePrefix: "INDI",
 		ValidTags:        iv.validTags,
 		RequiredTags:     iv.requiredTags,

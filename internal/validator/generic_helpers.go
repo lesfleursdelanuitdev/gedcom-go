@@ -4,8 +4,8 @@ import (
 	"github.com/yourorg/gedcom/pkg/gedcom"
 )
 
-// ValidationConfig holds configuration for generic validation functions.
-type ValidationConfig struct {
+// BasicValidationConfig holds configuration for basic generic validation functions.
+type BasicValidationConfig struct {
 	RecordTypePrefix string // "INDI", "FAM", etc.
 	ValidTags        map[string]bool
 	RequiredTags     map[string]bool
@@ -17,7 +17,7 @@ type ValidationConfig struct {
 func validateStructureGeneric(
 	xrefID string,
 	record gedcom.Record,
-	config ValidationConfig,
+	config BasicValidationConfig,
 	errorManager *gedcom.ErrorManager,
 ) {
 	tagsPresent := make(map[string]bool)

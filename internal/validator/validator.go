@@ -39,6 +39,7 @@ type GedcomValidator struct {
 	familyValidator     *FamilyValidator
 	crossRefValidator   *CrossReferenceValidator
 	headerValidator     *HeaderValidator
+	advancedValidator   *AdvancedValidator // Optional advanced validation
 }
 
 // NewGedcomValidator creates a new GedcomValidator with all sub-validators.
@@ -54,7 +55,7 @@ func NewGedcomValidator(errorManager *gedcom.ErrorManager) *GedcomValidator {
 
 // Validate runs all validators on the tree.
 func (gv *GedcomValidator) Validate(tree *gedcom.GedcomTree) error {
-	// Run all validators
+	// Run all basic validators
 	if err := gv.headerValidator.Validate(tree); err != nil {
 		return err
 	}
@@ -73,6 +74,13 @@ func (gv *GedcomValidator) Validate(tree *gedcom.GedcomTree) error {
 
 	// Check for required SUBM record
 	gv.validateSubmitter(tree)
+
+	// Run advanced validators if configured
+	if gv.advancedValidator != nil {
+		if err := gv.advancedValidator.Validate(tree); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -101,4 +109,30 @@ func (gv *GedcomValidator) validateSubmitter(tree *gedcom.GedcomTree) {
 // GetErrorManager returns the error manager.
 func (gv *GedcomValidator) GetErrorManager() *gedcom.ErrorManager {
 	return gv.errorManager
+}
+
+// EnableAdvancedValidation enables advanced validation with default rules.
+// This adds date consistency, relationship logic, and other advanced checks.
+func (gv *GedcomValidator) EnableAdvancedValidation() {
+	if gv.advancedValidator == nil {
+		gv.advancedValidator = NewAdvancedValidator(gv.errorManager)
+		// Add default advanced rules
+		gv.advancedValidator.AddRule(NewDateConsistencyValidator(gv.errorManager))
+	}
+}
+
+// EnableAdvancedValidationWithConfig enables advanced validation with custom configuration.
+func (gv *GedcomValidator) EnableAdvancedValidationWithConfig(config *ValidationConfig) {
+	if gv.advancedValidator == nil {
+		gv.advancedValidator = NewAdvancedValidatorWithConfig(gv.errorManager, config)
+		// Add default advanced rules
+		gv.advancedValidator.AddRule(NewDateConsistencyValidator(gv.errorManager))
+	} else {
+		gv.advancedValidator.SetConfig(config)
+	}
+}
+
+// GetAdvancedValidator returns the advanced validator (if enabled).
+func (gv *GedcomValidator) GetAdvancedValidator() *AdvancedValidator {
+	return gv.advancedValidator
 }

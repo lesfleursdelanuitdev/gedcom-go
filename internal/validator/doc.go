@@ -15,6 +15,8 @@
 //   - HeaderValidator: Validates header (HEAD) record
 //   - ParallelGedcomValidator: Parallel version of GedcomValidator
 //   - ParallelIndividualValidator: Parallel version of IndividualValidator
+//   - AdvancedValidator: Pluggable rule system for advanced validation
+//   - DateConsistencyValidator: Validates date consistency (Phase 1)
 //
 // # Validation Rules
 //
@@ -75,6 +77,32 @@
 //
 // Errors are categorized by severity:
 //
-//   - Warning: Non-critical issues (e.g., multiple events, invalid subtags)
-//   - Severe: Critical issues (e.g., missing required tags, invalid xrefs)
+//   - Hint: Best practices, optimizations (optional improvements)
+//   - Info: Data quality issues, suggestions (consider improving)
+//   - Warning: Unlikely but possible situations (should review)
+//   - Severe: Impossible situations, must fix (blocks processing)
+//
+// # Advanced Validation
+//
+// Advanced validation provides comprehensive data quality checks beyond
+// basic GEDCOM compliance:
+//
+//   - Date Consistency: Birth before death, reasonable ages, parent-child gaps
+//   - Relationship Logic: Bidirectional links, circular references (future)
+//   - Duplicate Detection: Exact and fuzzy duplicate detection (future)
+//   - Data Quality: Missing data, consistency checks (future)
+//
+// Usage:
+//
+//	errorManager := gedcom.NewErrorManager()
+//	validator := NewGedcomValidator(errorManager)
+//	validator.EnableAdvancedValidation() // Enable with defaults
+//	err := validator.Validate(tree)
+//
+// Or with custom configuration:
+//
+//	config := NewValidationConfig()
+//	config.MinParentAge = 12  // Custom threshold
+//	config.MinSeverity = gedcom.SeverityWarning  // Filter severity
+//	validator.EnableAdvancedValidationWithConfig(config)
 package validator
