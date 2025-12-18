@@ -3,7 +3,7 @@ package validator
 import (
 	"testing"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 func TestFamilyValidator_ValidateReferences_WIFE(t *testing.T) {

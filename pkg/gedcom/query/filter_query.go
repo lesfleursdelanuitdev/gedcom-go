@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // Filter represents a filter function for individuals.

@@ -35,9 +35,9 @@
 //
 //	import (
 //		"fmt"
-//		"github.com/yourorg/gedcom/pkg/gedcom"
-//		"github.com/yourorg/gedcom/internal/parser"
-//		"github.com/yourorg/gedcom/internal/validator"
+//		"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
+//		"github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
+//		"github.com/lesfleursdelanuitdev/gedcom-go/internal/validator"
 //	)
 //
 //	func main() {

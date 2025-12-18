@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/lesfleursdelanuitdev/gedcom-go/cmd/gedcom/internal"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/exporter"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 	"github.com/spf13/cobra"
-	"github.com/yourorg/gedcom/cmd/gedcom/internal"
-	"github.com/yourorg/gedcom/internal/exporter"
-	"github.com/yourorg/gedcom/internal/parser"
-	"github.com/yourorg/gedcom/pkg/gedcom"
 )
 
 var exportCmd = &cobra.Command{

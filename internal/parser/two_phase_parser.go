@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // RawRecord represents a record with unparsed child lines.

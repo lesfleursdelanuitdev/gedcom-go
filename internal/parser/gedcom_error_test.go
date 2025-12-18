@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 func TestHierarchicalParser_ErrorHandling_MalformedLines(t *testing.T) {

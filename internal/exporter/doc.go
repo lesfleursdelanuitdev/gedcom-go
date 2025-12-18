@@ -26,8 +26,8 @@
 //
 //	import (
 //		"fmt"
-//		"github.com/yourorg/gedcom/internal/exporter"
-//		"github.com/yourorg/gedcom/internal/parser"
+//		"github.com/lesfleursdelanuitdev/gedcom-go/internal/exporter"
+//		"github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
 //	)
 //
 //	func main() {

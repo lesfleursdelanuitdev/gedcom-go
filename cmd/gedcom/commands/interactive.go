@@ -7,11 +7,11 @@ import (
 	"strings"
 
 	"github.com/c-bata/go-prompt"
+	"github.com/lesfleursdelanuitdev/gedcom-go/cmd/gedcom/internal"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom/query"
 	"github.com/spf13/cobra"
-	"github.com/yourorg/gedcom/cmd/gedcom/internal"
-	"github.com/yourorg/gedcom/internal/parser"
-	"github.com/yourorg/gedcom/pkg/gedcom"
-	"github.com/yourorg/gedcom/pkg/gedcom/query"
 )
 
 var interactiveCmd = &cobra.Command{

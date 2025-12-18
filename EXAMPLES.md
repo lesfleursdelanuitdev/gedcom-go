@@ -21,7 +21,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"github.com/yourorg/gedcom/internal/parser"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
 )
 
 func main() {
@@ -169,9 +169,9 @@ package main
 import (
 	"fmt"
 	"log"
-	"github.com/yourorg/gedcom/pkg/gedcom"
-	"github.com/yourorg/gedcom/internal/parser"
-	"github.com/yourorg/gedcom/internal/validator"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/validator"
 )
 
 func main() {
@@ -241,8 +241,8 @@ package main
 import (
 	"fmt"
 	"log"
-	"github.com/yourorg/gedcom/internal/exporter"
-	"github.com/yourorg/gedcom/internal/parser"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/exporter"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
 )
 
 func main() {
@@ -319,9 +319,9 @@ package main
 import (
 	"fmt"
 	"log"
-	"github.com/yourorg/gedcom/pkg/gedcom"
-	"github.com/yourorg/gedcom/internal/parser"
-	"github.com/yourorg/gedcom/internal/validator"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/validator"
 )
 
 func main() {
@@ -467,7 +467,7 @@ if err != nil {
 ### Using Two-Phase Parser (for Large Files)
 
 ```go
-import "github.com/yourorg/gedcom/internal/parser"
+import "github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
 
 twoPhaseParser := parser.NewTwoPhaseParser()
 tree, err := twoPhaseParser.Parse("large_family.ged")
@@ -506,9 +506,9 @@ package main
 import (
 	"fmt"
 	"log"
-	"github.com/yourorg/gedcom/pkg/gedcom"
-	"github.com/yourorg/gedcom/internal/parser"
-	"github.com/yourorg/gedcom/internal/validator"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/validator"
 )
 
 func main() {

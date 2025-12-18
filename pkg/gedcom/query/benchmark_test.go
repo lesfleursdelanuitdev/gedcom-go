@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // generateLargeTree creates a tree with n individuals in a balanced binary tree structure

@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // XMLExporter exports a GEDCOM tree to XML format.

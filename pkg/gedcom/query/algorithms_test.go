@@ -3,7 +3,7 @@ package query
 import (
 	"testing"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 func TestGraph_BFS(t *testing.T) {

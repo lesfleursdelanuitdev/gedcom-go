@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // FilterIndexes contains indexes for fast filtering.

@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // HierarchicalParser is a full hierarchical parser that builds complete GEDCOM tree structure.

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // ParallelHierarchicalParser is an experimental parser that attempts to parallelize

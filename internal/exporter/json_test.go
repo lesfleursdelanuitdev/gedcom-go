@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 func TestJsonExporter_ExportToString(t *testing.T) {

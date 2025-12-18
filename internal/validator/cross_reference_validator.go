@@ -1,7 +1,7 @@
 package validator
 
 import (
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // CrossReferenceValidator validates cross-references between records.

@@ -1,7 +1,7 @@
 package query
 
 import (
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // NodeType represents the type of a graph node.

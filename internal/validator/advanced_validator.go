@@ -1,7 +1,7 @@
 package validator
 
 import (
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // ValidationRule is the interface that all advanced validation rules must implement.

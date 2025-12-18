@@ -3,7 +3,7 @@ package query
 import (
 	"fmt"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // FamilyQuery represents a query starting from a family.

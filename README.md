@@ -2,7 +2,7 @@
 
 [![Go Version](https://img.shields.io/badge/go-1.23+-00ADD8?style=flat-square&logo=go)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/yourorg/gedcom)](https://goreportcard.com/report/github.com/yourorg/gedcom)
+[![Go Report Card](https://goreportcard.com/badge/github.com/lesfleursdelanuitdev/gedcom-go)](https://goreportcard.com/report/github.com/lesfleursdelanuitdev/gedcom-go)
 
 A **production-ready, high-performance GEDCOM parser, validator, query system, and CLI tool** written in Go. Full GEDCOM 5.5.1 specification support with advanced graph-based querying, interactive exploration, and comprehensive validation.
 
@@ -82,9 +82,9 @@ package main
 
 import (
     "fmt"
-    "github.com/yourorg/gedcom/pkg/gedcom"
-    "github.com/yourorg/gedcom/internal/parser"
-    "github.com/yourorg/gedcom/pkg/gedcom/query"
+    "github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
+    "github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
+    "github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom/query"
 )
 
 func main() {

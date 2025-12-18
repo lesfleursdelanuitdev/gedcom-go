@@ -3,8 +3,8 @@ package validator
 import (
 	"testing"
 
-	"github.com/yourorg/gedcom/internal/parser"
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 func TestValidator_Integration_RealFiles(t *testing.T) {

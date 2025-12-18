@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // TestIntegration_SpecializedRecords verifies that specialized record types are created

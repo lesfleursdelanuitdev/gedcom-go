@@ -3,7 +3,7 @@ package query
 import (
 	"fmt"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // CentralityMetric represents the type of centrality measure.

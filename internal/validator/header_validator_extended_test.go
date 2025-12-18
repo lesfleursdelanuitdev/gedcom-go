@@ -3,7 +3,7 @@ package validator
 import (
 	"testing"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 func TestHeaderValidator_ValidateGedc_MissingGEDC(t *testing.T) {

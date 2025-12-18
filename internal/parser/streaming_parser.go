@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 // RecordHandler is a callback function that processes records as they're parsed.

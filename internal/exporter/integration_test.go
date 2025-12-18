@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/yourorg/gedcom/internal/parser"
-	"github.com/yourorg/gedcom/pkg/gedcom"
+	"github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
+	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
 func TestExporter_Integration_ParseExportParse(t *testing.T) {
