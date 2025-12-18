@@ -19,6 +19,8 @@ A **production-ready, high-performance GEDCOM parser, validator, query system, a
 - **💻 CLI Tool** - Complete command-line interface
 - **🎯 Interactive Mode** - REPL for exploring genealogical data
 - **🔎 Advanced Search** - Multi-filter search with indexes
+- **🔍 Duplicate Detection** - Find potential duplicate individuals with similarity scoring
+- **📊 GEDCOM Diff** - Semantic comparison of GEDCOM files with change history
 
 ### 🎯 Query Capabilities
 
@@ -39,6 +41,8 @@ A **production-ready, high-performance GEDCOM parser, validator, query system, a
 - **`export`** - Export to JSON, XML, YAML, or GEDCOM
 - **`interactive`** - Interactive REPL mode for querying
 - **`search`** - Advanced multi-filter search
+- **`duplicates`** - Find potential duplicate individuals (coming soon)
+- **`diff`** - Compare two GEDCOM files and show differences (coming soon)
 
 ## Installation
 
