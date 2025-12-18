@@ -305,7 +305,8 @@ gedcom-go/
 - **[Exporter Documentation](docs/exporter.md)** - Export GEDCOM data to JSON, XML, YAML, and GEDCOM formats
 - **[Query API Documentation](docs/query-api.md)** - Graph-based query API for relationship queries
 - **[Types Documentation](docs/types.md)** - Core GEDCOM data types and structures
-- **[Duplicate Detection](DUPLICATE_DETECTION_DESIGN.md)** - Duplicate detection system design and implementation
+- **[Duplicate Detection Documentation](docs/duplicate-detection.md)** - Find potential duplicate individuals with similarity scoring
+- **[Diff Documentation](docs/diff.md)** - Semantic comparison of GEDCOM files with change history tracking
 
 ## Testing
 
