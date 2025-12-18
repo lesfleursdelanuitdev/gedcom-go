@@ -30,6 +30,7 @@ A **production-ready, high-performance GEDCOM parser, validator, query system, a
 - **Graph Analytics**: Centrality, diameter, connected components
 - **Advanced Filtering**: Indexed search with multiple criteria
 - **Duplicate Detection**: Find potential duplicates with weighted similarity scoring
+- **GEDCOM Diff**: Semantic comparison with change history tracking
 
 ### 🛠️ CLI Commands
 
@@ -130,6 +131,18 @@ func main() {
             match.SimilarityScore,
             match.Confidence)
     }
+
+    // Compare two GEDCOM files
+    import "github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom/diff"
+    
+    tree1, _ := p.Parse("file1.ged")
+    tree2, _ := p.Parse("file2.ged")
+    
+    differ := diff.NewGedcomDiffer(diff.DefaultConfig())
+    diffResult, _ := differ.Compare(tree1, tree2)
+    
+    report, _ := differ.GenerateReport(diffResult)
+    fmt.Println(report)
 }
 ```
 
@@ -245,7 +258,8 @@ gedcom-go/
 │   ├── Core types       # Tree, Record, Line, Error
 │   ├── Record types      # Individual, Family, Note, etc.
 │   ├── query/           # Graph-based Query API
-│   └── duplicate/       # Duplicate detection system
+│   ├── duplicate/       # Duplicate detection system
+│   └── diff/            # GEDCOM diff system
 ├── internal/            # Implementation
 │   ├── parser/         # Parsing logic
 │   ├── validator/      # Validation logic
@@ -309,6 +323,7 @@ go test ./... -bench=.
 - ✅ Query API: Comprehensive (15+ test files)
 - ✅ Core Types: Comprehensive (10+ test files)
 - ✅ Duplicate Detection: Comprehensive (similarity, phonetic, relationships, parallel processing)
+- ✅ GEDCOM Diff: Comprehensive (XREF matching, field comparison, change history)
 
 ## Requirements
 
