@@ -16,6 +16,8 @@ It helps you find relationships, detect duplicates, understand data quality, and
 
 ```bash
 # 1. Install the tool
+# Option A: Prebuilt binaries (coming soon - check GitHub Releases)
+# Option B: Using Go (if you have Go installed)
 go install github.com/lesfleursdelanuitdev/gedcom-go/cmd/gedcom@latest
 
 # 2. Start interactive exploration (recommended for first-time users)
@@ -55,7 +57,6 @@ GEDCOM Go helps you:
 - **Validate data quality** — Understand what's missing, what's inconsistent, and what needs attention
 - **Explore interactively** — Navigate family trees naturally, ask questions, follow connections
 - **Export meaningful subsets** — Extract specific branches, regions, or time periods for sharing or analysis
-- **Compare files** — See what changed between versions of your GEDCOM files
 
 ## What This Tool Does Not Do
 
@@ -64,7 +65,7 @@ To set clear expectations:
 - **It does not automatically merge people** — Duplicate detection produces suggestions, not automatic merges
 - **It does not silently discard records** — All warnings are surfaced; nothing is hidden
 - **It does not claim certainty where data is ambiguous** — Results are ranked by confidence, with explanations
-- **It does not require you to be a programmer** — The CLI and interactive mode are designed for genealogists
+- **It does not require you to be a programmer** — The CLI and interactive mode are designed for genealogists. Most users start in `interactive` mode and never write code.
 
 ## Design Philosophy
 
@@ -86,9 +87,25 @@ This means the tool will tell you when a search is too broad, when data quality 
 - **`export`** - Export to JSON, XML, YAML, or GEDCOM formats
 - **`parse`** - Parse and validate GEDCOM files
 - **`quality`** - Generate data quality reports (coming soon)
-- **`diff`** - Compare two GEDCOM files (coming soon)
+
+**Roadmap:**
+- **`diff`** - Compare two GEDCOM files (planned - API exists, CLI coming soon)
 
 ## Installation
+
+### Prebuilt Binaries (Recommended)
+
+**Prebuilt binaries are planned for GitHub Releases (macOS, Windows, Linux).**
+
+For now, install via Go (see below). Once binaries are available, you'll be able to download and run without installing Go.
+
+### Using Go Install
+
+```bash
+go install github.com/lesfleursdelanuitdev/gedcom-go/cmd/gedcom@latest
+```
+
+**Note:** If you don't use Go, wait for prebuilt binaries or use the source installation method below.
 
 ### From Source
 
@@ -96,12 +113,6 @@ This means the tool will tell you when a search is too broad, when data quality 
 git clone https://github.com/lesfleursdelanuitdev/gedcom-go.git
 cd gedcom-go
 go build -o gedcom ./cmd/gedcom
-```
-
-### Using Go Install
-
-```bash
-go install github.com/lesfleursdelanuitdev/gedcom-go/cmd/gedcom@latest
 ```
 
 ## Example Usage
@@ -150,6 +161,9 @@ gedcom> exit
 ```bash
 # Find top 200 potential duplicates with explanations
 gedcom duplicates family.ged --top 200 --explain
+
+# Find matches for a specific person (most common use case)
+gedcom duplicates family.ged --individual @I123@ --top 20 --explain
 
 # Find duplicates in a specific time period and place
 gedcom duplicates family.ged --place "Guyana" --year 1850-1920 --top 200
@@ -217,12 +231,13 @@ gedcom validate advanced family.ged --output report.html --format html
 
 ### Programmatic Usage (Go API)
 
+> **Note:** These are illustrative code snippets. For complete examples, see the [documentation](docs/).
+
 ```go
 package main
 
 import (
     "fmt"
-    "github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
     "github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
     "github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom/query"
     "github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom/duplicate"
@@ -232,12 +247,6 @@ func main() {
     // Parse GEDCOM file
     p := parser.NewHierarchicalParser()
     tree, err := p.Parse("family.ged")
-    if err != nil {
-        panic(err)
-    }
-
-    // Build graph for queries
-    graph, err := query.BuildGraph(tree)
     if err != nil {
         panic(err)
     }
@@ -268,16 +277,6 @@ func main() {
             match.SimilarityScore,
             match.Confidence)
     }
-    import "github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom/diff"
-    
-    tree1, _ := p.Parse("file1.ged")
-    tree2, _ := p.Parse("file2.ged")
-    
-    differ := diff.NewGedcomDiffer(diff.DefaultConfig())
-    diffResult, _ := differ.Compare(tree1, tree2)
-    
-    report, _ := differ.GenerateReport(diffResult)
-    fmt.Println(report)
 }
 ```
 
@@ -401,6 +400,9 @@ gedcom> exit
 **Example workflows:**
 
 ```bash
+# Find matches for a specific person (most common use case)
+gedcom duplicates family.ged --individual @I123@ --top 20 --explain
+
 # Find top 200 potential duplicates with explanations
 gedcom duplicates family.ged --top 200 --explain
 
@@ -614,10 +616,10 @@ go test -bench=BenchmarkFilterQuery_500K -benchmem ./pkg/gedcom/query/...
 ### Performance Characteristics
 
 **Scaling Behavior:**
-- **Parsing:** ~50,000-100,000 individuals/second (linear scaling)
-- **Graph Construction:** ~10,000-20,000 individuals/second (linear scaling)
+- **Parsing:** ~50,000-100,000 individuals/second (linear scaling, validated up to 5M)
+- **Graph Construction:** ~10,000-20,000 individuals/second (linear scaling, validated up to 1.5-2M on typical hardware)
 - **Query Performance:** Sub-millisecond for most queries (constant time with caching)
-- **Memory:** ~14-15 MB per 1,000 individuals (tested up to 5M individuals)
+- **Memory:** ~14-15 MB per 1,000 individuals (validated up to 1.5M; 5M requires ~70-75 GB)
 - **Duplicate Detection:** O(n²) → O(n) with blocking; ~8 seconds for 1.5M individuals
 
 ### Optimizations
