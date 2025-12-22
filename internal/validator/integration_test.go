@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"os"
 	"testing"
 
 	"github.com/lesfleursdelanuitdev/gedcom-go/internal/parser"
@@ -17,6 +18,11 @@ func TestValidator_Integration_RealFiles(t *testing.T) {
 
 	for _, filePath := range testFiles {
 		t.Run(filePath, func(t *testing.T) {
+			// Skip if file doesn't exist (these are optional external test files)
+			if _, err := os.Stat(filePath); os.IsNotExist(err) {
+				t.Skipf("Skipping test - file does not exist: %s", filePath)
+			}
+
 			// Parse the file
 			hp := parser.NewHierarchicalParser()
 			tree, err := hp.Parse(filePath)
