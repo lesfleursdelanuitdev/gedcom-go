@@ -10,15 +10,21 @@ import (
 // This function coordinates the building process by delegating to:
 // - buildGraphInSQLite: Builds indexes in SQLite (see hybrid_sqlite_builder.go)
 // - buildGraphInBadgerDB: Stores graph structure in BadgerDB (see hybrid_badger_builder.go)
-func BuildGraphHybrid(tree *gedcom.GedcomTree, sqlitePath, badgerPath string) (*Graph, error) {
+// If config is nil, DefaultConfig() is used.
+func BuildGraphHybrid(tree *gedcom.GedcomTree, sqlitePath, badgerPath string, config *Config) (*Graph, error) {
+	// Use default config if none provided
+	if config == nil {
+		config = DefaultConfig()
+	}
+
 	// Initialize hybrid storage
-	storage, err := NewHybridStorage(sqlitePath, badgerPath)
+	storage, err := NewHybridStorage(sqlitePath, badgerPath, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize hybrid storage: %w", err)
 	}
 
 	// Create graph structure (will use hybrid storage)
-	graph := NewGraph(tree)
+	graph := NewGraphWithConfig(tree, config)
 	graph.hybridStorage = storage
 	graph.hybridMode = true
 
@@ -30,11 +36,12 @@ func BuildGraphHybrid(tree *gedcom.GedcomTree, sqlitePath, badgerPath string) (*
 	}
 	graph.queryHelpers = queryHelpers
 
-	// Initialize hybrid cache with default sizes
-	// Node cache: 50K nodes (configurable)
-	// XREF cache: 25K entries (configurable)
-	// Query cache: 5K queries (configurable)
-	hybridCache, err := NewHybridCache(50000, 25000, 5000)
+	// Initialize hybrid cache with configured sizes
+	hybridCache, err := NewHybridCache(
+		config.Cache.HybridNodeCacheSize,
+		config.Cache.HybridXrefCacheSize,
+		config.Cache.HybridQueryCacheSize,
+	)
 	if err != nil {
 		queryHelpers.Close()
 		storage.Close()

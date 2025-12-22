@@ -56,8 +56,18 @@ type Graph struct {
 	hybridCache   *HybridCache        // LRU cache for hybrid storage
 }
 
-// NewGraph creates a new empty graph.
+// NewGraph creates a new empty graph with default configuration.
 func NewGraph(tree *gedcom.GedcomTree) *Graph {
+	return NewGraphWithConfig(tree, DefaultConfig())
+}
+
+// NewGraphWithConfig creates a new empty graph with the provided configuration.
+func NewGraphWithConfig(tree *gedcom.GedcomTree, config *Config) *Graph {
+	// Use default config if none provided
+	if config == nil {
+		config = DefaultConfig()
+	}
+
 	return &Graph{
 		tree:           tree,
 		xrefToID:       make(map[string]uint32),
@@ -79,7 +89,7 @@ func NewGraph(tree *gedcom.GedcomTree) *Graph {
 		components:     make(map[uint32][]uint32),
 		componentCount: 0,
 		properties:     make(map[string]interface{}),
-		cache:          newQueryCache(1000), // Default cache size
+		cache:          newQueryCache(config.Cache.QueryCacheSize),
 		indexes:        newFilterIndexes(),
 	}
 }

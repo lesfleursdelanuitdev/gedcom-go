@@ -1,0 +1,20 @@
+{
+  "cache": {
+    "hybrid_node_cache_size": 50000,
+    "hybrid_xref_cache_size": 25000,
+    "hybrid_query_cache_size": 5000,
+    "query_cache_size": 1000
+  },
+  "timeout": {
+    "sqlite_query_timeout": "30s",
+    "badgerdb_timeout": "10s",
+    "build_timeout": "5m",
+    "query_timeout": "1m"
+  },
+  "database": {
+    "sqlite_max_open_conns": 10,
+    "sqlite_max_idle_conns": 5,
+    "badgerdb_value_log_file_size": 1073741824
+  }
+}
+

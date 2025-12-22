@@ -19,19 +19,25 @@ type HybridStorage struct {
 }
 
 // NewHybridStorage creates a new hybrid storage instance
-func NewHybridStorage(sqlitePath, badgerPath string) (*HybridStorage, error) {
+// If config is nil, DefaultConfig() is used.
+func NewHybridStorage(sqlitePath, badgerPath string, config *Config) (*HybridStorage, error) {
+	// Use default config if none provided
+	if config == nil {
+		config = DefaultConfig()
+	}
+
 	hs := &HybridStorage{
 		sqlitePath: sqlitePath,
 		badgerPath: badgerPath,
 	}
 
 	// Initialize SQLite
-	if err := hs.initSQLite(); err != nil {
+	if err := hs.initSQLite(config); err != nil {
 		return nil, fmt.Errorf("failed to initialize SQLite: %w", err)
 	}
 
 	// Initialize BadgerDB
-	if err := hs.initBadgerDB(); err != nil {
+	if err := hs.initBadgerDB(config); err != nil {
 		hs.Close() // Clean up SQLite if BadgerDB fails
 		return nil, fmt.Errorf("failed to initialize BadgerDB: %w", err)
 	}
@@ -40,7 +46,7 @@ func NewHybridStorage(sqlitePath, badgerPath string) (*HybridStorage, error) {
 }
 
 // initSQLite initializes the SQLite database and creates schema
-func (hs *HybridStorage) initSQLite() error {
+func (hs *HybridStorage) initSQLite(config *Config) error {
 	// Create directory if it doesn't exist
 	dir := filepath.Dir(hs.sqlitePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
@@ -53,9 +59,9 @@ func (hs *HybridStorage) initSQLite() error {
 		return fmt.Errorf("failed to open SQLite database: %w", err)
 	}
 
-	// Set connection pool settings
-	db.SetMaxOpenConns(10)
-	db.SetMaxIdleConns(5)
+	// Set connection pool settings from config
+	db.SetMaxOpenConns(config.Database.SQLiteMaxOpenConns)
+	db.SetMaxIdleConns(config.Database.SQLiteMaxIdleConns)
 
 	hs.sqliteDB = db
 
@@ -226,7 +232,7 @@ func (hs *HybridStorage) createSQLiteSchema() error {
 }
 
 // initBadgerDB initializes the BadgerDB database
-func (hs *HybridStorage) initBadgerDB() error {
+func (hs *HybridStorage) initBadgerDB(config *Config) error {
 	// Create directory if it doesn't exist
 	dir := filepath.Dir(hs.badgerPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
@@ -238,6 +244,7 @@ func (hs *HybridStorage) initBadgerDB() error {
 	// Note: BadgerDB v4 uses different options - memory mapping is handled automatically
 	// We can configure other options like compression, etc. here if needed
 	opts.Logger = nil // Disable logging for now
+	opts.ValueLogFileSize = config.Database.BadgerDBValueLogFileSize
 
 	// Open BadgerDB
 	db, err := badger.Open(opts)
