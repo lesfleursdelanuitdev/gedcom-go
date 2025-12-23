@@ -49,9 +49,17 @@ var exportGedcomCmd = &cobra.Command{
 	RunE:  runExportGEDCOM,
 }
 
+var exportCsvCmd = &cobra.Command{
+	Use:   "csv [input.ged]",
+	Short: "Export to CSV",
+	Long:  "Export a GEDCOM file to CSV format",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runExportCSV,
+}
+
 func init() {
 	// Add flags to all export commands
-	for _, cmd := range []*cobra.Command{exportJsonCmd, exportXmlCmd, exportYamlCmd, exportGedcomCmd} {
+	for _, cmd := range []*cobra.Command{exportJsonCmd, exportXmlCmd, exportYamlCmd, exportGedcomCmd, exportCsvCmd} {
 		cmd.Flags().StringP("output", "o", "", "Output file (required)")
 		cmd.MarkFlagRequired("output")
 		cmd.Flags().Bool("pretty", true, "Pretty-print output")
@@ -63,6 +71,7 @@ func init() {
 	exportCmd.AddCommand(exportXmlCmd)
 	exportCmd.AddCommand(exportYamlCmd)
 	exportCmd.AddCommand(exportGedcomCmd)
+	exportCmd.AddCommand(exportCsvCmd)
 }
 
 func runExportJSON(cmd *cobra.Command, args []string) error {
@@ -79,6 +88,10 @@ func runExportYAML(cmd *cobra.Command, args []string) error {
 
 func runExportGEDCOM(cmd *cobra.Command, args []string) error {
 	return runExport(cmd, args, "gedcom")
+}
+
+func runExportCSV(cmd *cobra.Command, args []string) error {
+	return runExport(cmd, args, "csv")
 }
 
 func runExport(cmd *cobra.Command, args []string, format string) error {
@@ -161,6 +174,16 @@ func runExport(cmd *cobra.Command, args []string, format string) error {
 			progressBar.Set(50)
 		}
 		err = gedcomExporter.ExportToFile(tree, outputFile)
+		if progressBar != nil {
+			progressBar.Set(100)
+		}
+
+	case "csv":
+		csvExporter := exporter.NewCSVExporter(errorManager)
+		if progressBar != nil {
+			progressBar.Set(50)
+		}
+		err = csvExporter.ExportToFile(tree, outputFile)
 		if progressBar != nil {
 			progressBar.Set(100)
 		}

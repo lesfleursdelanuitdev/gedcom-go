@@ -54,6 +54,9 @@ type Graph struct {
 	hybridMode    bool
 	queryHelpers  *HybridQueryHelpers // SQLite query helpers
 	hybridCache   *HybridCache        // LRU cache for hybrid storage
+
+	// Metrics collection (optional)
+	metrics *Metrics
 }
 
 // NewGraph creates a new empty graph with default configuration.
@@ -91,6 +94,7 @@ func NewGraphWithConfig(tree *gedcom.GedcomTree, config *Config) *Graph {
 		properties:     make(map[string]interface{}),
 		cache:          newQueryCache(config.Cache.QueryCacheSize),
 		indexes:        newFilterIndexes(),
+		metrics:        NewMetrics(), // Initialize metrics collection
 	}
 }
 
@@ -111,4 +115,11 @@ func (g *Graph) EdgeCount() int {
 // Tree returns the underlying GEDCOM tree.
 func (g *Graph) Tree() *gedcom.GedcomTree {
 	return g.tree
+}
+
+// GetMetrics returns the metrics collector (may be nil if not initialized)
+func (g *Graph) GetMetrics() *Metrics {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	return g.metrics
 }

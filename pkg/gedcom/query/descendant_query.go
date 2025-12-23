@@ -1,6 +1,8 @@
 package query
 
 import (
+	"time"
+
 	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
@@ -49,6 +51,15 @@ func (dq *DescendantQuery) Filter(fn func(*gedcom.IndividualRecord) bool) *Desce
 
 // Execute runs the query and returns descendant records.
 func (dq *DescendantQuery) Execute() ([]*gedcom.IndividualRecord, error) {
+	// Record metrics if available
+	start := time.Now()
+	defer func() {
+		if dq.graph.metrics != nil {
+			duration := time.Since(start)
+			dq.graph.metrics.RecordQuery(duration)
+		}
+	}()
+
 	startNode := dq.graph.GetIndividual(dq.startXrefID)
 	if startNode == nil {
 		return nil, nil

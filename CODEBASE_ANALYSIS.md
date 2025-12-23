@@ -281,7 +281,13 @@ GEDCOM File
 
 ### 3. **Code Organization**
 - `query/` package is large (could be split into sub-packages)
-- Some files are quite long (e.g., `graph.go` at 1,124 lines)
+- Graph functionality has been refactored into multiple files:
+  - `graph.go` (114 lines) - Core structure
+  - `graph_nodes.go` (298 lines) - Node access
+  - `graph_edges.go` (101 lines) - Edge management
+  - `graph_hybrid.go` (387 lines) - Hybrid storage
+  - `graph_hybrid_helpers.go` (178 lines) - Hybrid helpers
+  - `graph_metrics.go` (421 lines) - Metrics
 
 ### 4. **Testing**
 - Some edge cases might not be covered

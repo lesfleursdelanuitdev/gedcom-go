@@ -1,6 +1,8 @@
 package query
 
 import (
+	"time"
+
 	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
 
@@ -57,6 +59,15 @@ func (aq *AncestorQuery) Filter(fn func(*gedcom.IndividualRecord) bool) *Ancesto
 
 // Execute runs the query and returns ancestor records.
 func (aq *AncestorQuery) Execute() ([]*gedcom.IndividualRecord, error) {
+	// Record metrics if available
+	start := time.Now()
+	defer func() {
+		if aq.graph.metrics != nil {
+			duration := time.Since(start)
+			aq.graph.metrics.RecordQuery(duration)
+		}
+	}()
+
 	startNode := aq.graph.GetIndividual(aq.startXrefID)
 	if startNode == nil {
 		return nil, nil

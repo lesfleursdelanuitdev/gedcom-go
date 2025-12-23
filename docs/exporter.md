@@ -43,6 +43,7 @@ The exporter package provides functionality for converting GEDCOM trees to vario
 | **JSON** | `JsonExporter` | `.json` | ✅ Yes | Most common for APIs |
 | **XML** | `XMLExporter` | `.xml` | ✅ Yes | Standard XML format |
 | **YAML** | `YAMLExporter` | `.yaml`, `.yml` | ✅ Yes | Human-readable |
+| **CSV** | `CSVExporter` | `.csv` | N/A | Tabular format for spreadsheet import |
 | **GEDCOM** | `GedcomExporter` | `.ged` | N/A | Native format |
 
 ---
@@ -379,6 +380,65 @@ err := yamlExporter.ExportToFile(tree, "output.yaml")
 // Export to string
 yamlString, err := yamlExporter.ExportToString(tree)
 ```
+
+---
+
+### CSV Export
+
+CSV export provides a tabular representation of GEDCOM data, ideal for spreadsheet applications and data analysis.
+
+#### Features
+
+- Tabular format with one row per individual
+- All key fields included (name, dates, places, relationships)
+- Easy import into Excel, Google Sheets, or database systems
+- Standard CSV format with proper escaping
+
+#### CSV Columns
+
+The CSV export includes the following columns:
+
+- **XREF**: Record identifier (e.g., "@I1@")
+- **Type**: Record type (always "INDI" for individuals)
+- **Name**: Full name
+- **Sex**: Gender (M, F, U)
+- **Birth Date**: Birth date
+- **Birth Place**: Birth place
+- **Death Date**: Death date
+- **Death Place**: Death place
+- **Father XREF**: Father's record identifier
+- **Mother XREF**: Mother's record identifier
+- **Spouse XREFs**: Semicolon-separated list of spouse family XREFs
+- **Children XREFs**: Semicolon-separated list of children XREFs
+- **Notes**: Pipe-separated list of note XREFs
+
+#### Example Output
+
+```csv
+XREF,Type,Name,Sex,Birth Date,Birth Place,Death Date,Death Place,Father XREF,Mother XREF,Spouse XREFs,Children XREFs,Notes
+@I1@,INDI,John /Doe/,M,1900-01-15,Anytown, ST,1970-03-20,Anytown, ST,@I10@,@I11@,@F1@;@F2@,@I3@;@I4@,@N1@
+@I2@,INDI,Mary /Smith/,F,1902-05-20,Anytown, ST,1975-08-10,Anytown, ST,@I12@,@I13@,@F1@,@I3@;@I4@,
+```
+
+#### Usage
+
+```go
+errorManager := gedcom.NewErrorManager()
+csvExporter := exporter.NewCSVExporter(errorManager)
+
+// Export to file
+err := csvExporter.ExportToFile(tree, "output.csv")
+
+// Export to string
+csvString, err := csvExporter.ExportToString(tree)
+```
+
+#### Use Cases
+
+- **Data Analysis**: Import into Excel or Google Sheets for analysis
+- **Database Import**: Import into relational databases
+- **Reporting**: Generate reports in spreadsheet format
+- **Data Migration**: Convert GEDCOM data for other systems
 
 ---
 

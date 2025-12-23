@@ -39,6 +39,12 @@ gedcom duplicates family.ged --top 200
 # Validate your data
 gedcom validate advanced family.ged --severity warning
 
+# Generate data quality report
+gedcom quality family.ged --format json -o quality-report.json
+
+# Compare two GEDCOM files
+gedcom diff file1.ged file2.ged --strategy hybrid -o diff-report.txt
+
 # Search with filters
 gedcom search family.ged --name "John" --sex M --birth-year 1900-1950
 
@@ -84,12 +90,10 @@ This means the tool will tell you when a search is too broad, when data quality 
 - **`duplicates`** - Find potential duplicates with explanations
 - **`search`** - Search with multiple filters (name, date, place, etc.)
 - **`validate`** - Check data quality and find inconsistencies
-- **`export`** - Export to JSON, XML, YAML, or GEDCOM formats
+- **`export`** - Export to JSON, XML, YAML, CSV, or GEDCOM formats
 - **`parse`** - Parse and validate GEDCOM files
-- **`quality`** - Generate data quality reports (coming soon)
-
-**Roadmap:**
-- **`diff`** - Compare two GEDCOM files (planned - API exists, CLI coming soon)
+- **`quality`** - Generate comprehensive data quality reports
+- **`diff`** - Compare two GEDCOM files and show semantic differences
 
 ## Installation
 
@@ -665,14 +669,20 @@ go test -bench=BenchmarkFilterQuery_500K -benchmem ./pkg/gedcom/query/...
 
 ## Documentation
 
+### Core Documentation
 - **[CLI Documentation](docs/cli.md)** - Complete CLI reference guide
 - **[Parser Documentation](docs/parser.md)** - Parse GEDCOM files with multiple parser types
 - **[Validator Documentation](docs/validator.md)** - Validate GEDCOM files with comprehensive rules
-- **[Exporter Documentation](docs/exporter.md)** - Export GEDCOM data to JSON, XML, YAML, and GEDCOM formats
+- **[Exporter Documentation](docs/exporter.md)** - Export GEDCOM data to JSON, XML, YAML, CSV, and GEDCOM formats
 - **[Query API Documentation](docs/query-api.md)** - Graph-based query API for relationship queries
 - **[Types Documentation](docs/types.md)** - Core GEDCOM data types and structures
 - **[Duplicate Detection Documentation](docs/duplicate-detection.md)** - Find potential duplicate individuals with similarity scoring
 - **[Diff Documentation](docs/diff.md)** - Semantic comparison of GEDCOM files with change history tracking
+
+### Architecture & Examples
+- **[Architecture Documentation](docs/ARCHITECTURE.md)** - System architecture, design patterns, and scalability
+- **[API Examples](docs/API_EXAMPLES.md)** - Comprehensive code examples for all major features
+- **[Error Handling Guide](docs/ERROR_HANDLING.md)** - Error handling patterns, examples, and best practices
 
 ## Testing
 

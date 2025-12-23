@@ -2,6 +2,7 @@ package query
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/lesfleursdelanuitdev/gedcom-go/pkg/gedcom"
 )
@@ -10,6 +11,15 @@ import (
 // Uses indexes for fast filtering when possible.
 // If hybrid mode is enabled, uses SQLite for lookups.
 func (fq *FilterQuery) Execute() ([]*gedcom.IndividualRecord, error) {
+	// Record metrics if available
+	start := time.Now()
+	defer func() {
+		if fq.graph.metrics != nil {
+			duration := time.Since(start)
+			fq.graph.metrics.RecordQuery(duration)
+		}
+	}()
+
 	// If hybrid mode, use SQLite queries
 	if fq.graph.hybridMode && fq.graph.queryHelpers != nil {
 		return fq.executeHybrid()

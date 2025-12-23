@@ -12,6 +12,7 @@
 //   - JsonExporter: Exports to JSON format
 //   - XMLExporter: Exports to XML format
 //   - YAMLExporter: Exports to YAML format
+//   - CSVExporter: Exports to CSV format (tabular, spreadsheet-friendly)
 //
 // # Features
 //

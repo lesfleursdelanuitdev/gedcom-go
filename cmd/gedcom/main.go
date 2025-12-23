@@ -57,6 +57,8 @@ func init() {
 	rootCmd.AddCommand(commands.GetExportCommand())
 	rootCmd.AddCommand(commands.GetInteractiveCommand())
 	rootCmd.AddCommand(commands.GetSearchCommand())
+	rootCmd.AddCommand(commands.GetDiffCommand())
+	rootCmd.AddCommand(commands.GetQualityCommand())
 }
 
 func main() {

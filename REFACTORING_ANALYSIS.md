@@ -2,80 +2,80 @@
 
 ## Executive Summary
 
-This analysis identifies large files, code organization issues, and refactoring opportunities in the `gedcom-go` codebase. The codebase is generally well-structured, but several files have grown large and would benefit from refactoring to improve maintainability.
+This analysis identifies large files, code organization issues, and refactoring opportunities in the `gedcom-go` codebase. The codebase is generally well-structured, and **major refactoring has been completed**:
 
-## Large Files Requiring Attention
+✅ **Completed Refactoring:**
+- `graph.go`: Refactored from 1,225 lines → 114 lines (split into 6 files)
+- `hybrid_builder.go`: Refactored from 1,060 lines → 64 lines (split into 4 files)
+- `filter_query.go`: Refactored from 572 lines → 52 lines (split into 5 files)
 
-### 1. `pkg/gedcom/query/graph.go` - **1,225 lines** ⚠️ **HIGH PRIORITY**
+The codebase now has better separation of concerns and improved maintainability.
 
-**Current Responsibilities:**
-- Graph structure definition (`Graph` struct with 20+ fields)
-- Node management (GetIndividual, GetFamily, GetNote, GetSource, GetRepository, GetEvent)
-- Edge management (AddEdge, RemoveEdge, AddEdgeIncremental, RemoveEdgeIncremental)
-- Hybrid storage integration (get*FromHybrid, load*FromHybrid methods)
-- Lazy loading logic (ensureEdgesLoaded, load*EdgesUnlocked)
-- Graph metrics and analytics
-- ID mapping (xrefToID, idToXref)
-- Component detection
-- Relationship calculations
-- Cache management integration
+## Refactored Files
 
-**Issues:**
-- **Too many responsibilities**: This file handles graph structure, storage, lazy loading, hybrid mode, caching, and queries
-- **High complexity**: ~50+ public and private methods
-- **Mixed concerns**: Storage logic, query logic, and graph management are all intertwined
-- **Hard to test**: Large surface area makes unit testing difficult
-- **Hard to maintain**: Changes to one concern can affect others
+### 1. `pkg/gedcom/query/graph.go` - **114 lines** ✅ **REFACTORED**
 
-**Recommendations:**
-1. **Extract Node Access Layer**: Create `graph_nodes.go` for all `Get*` methods
-2. **Extract Edge Management**: Create `graph_edges.go` for edge operations
-3. **Extract Hybrid Storage Logic**: Move all `*FromHybrid` methods to `graph_hybrid.go`
-4. **Extract Lazy Loading**: Move lazy loading logic to `graph_lazy.go`
-5. **Extract Graph Metrics**: Move metrics to `graph_metrics.go` (already exists but may need expansion)
-6. **Keep Core Structure**: `graph.go` should only contain the `Graph` struct definition and core initialization
+**Status**: ✅ **COMPLETED** - Successfully refactored into multiple focused files
 
-**Estimated Impact**: High - Would significantly improve maintainability and testability
+**Original State:**
+- Was 1,225 lines with too many responsibilities
+- Mixed concerns: structure, storage, lazy loading, hybrid mode, caching, queries
+
+**Refactored Structure:**
+1. ✅ **`graph.go`** (114 lines) - Core `Graph` struct definition and initialization only
+2. ✅ **`graph_nodes.go`** (298 lines) - All `Get*` methods (GetIndividual, GetFamily, GetNote, etc.)
+3. ✅ **`graph_edges.go`** (101 lines) - Edge operations (AddEdge, RemoveEdge, etc.)
+4. ✅ **`graph_hybrid.go`** (387 lines) - Hybrid storage integration (get*FromHybrid, load*FromHybrid)
+5. ✅ **`graph_hybrid_helpers.go`** (178 lines) - Hybrid helper functions
+6. ✅ **`graph_metrics.go`** (421 lines) - Graph metrics and analytics
+
+**Result:**
+- **Total**: ~1,499 lines across 6 well-organized files
+- **Improved maintainability**: Each file has a single, clear responsibility
+- **Better testability**: Smaller, focused files are easier to test
+- **Clear separation of concerns**: Structure, nodes, edges, hybrid, and metrics are separated
 
 ---
 
-### 2. `pkg/gedcom/query/hybrid_builder.go` - **1,060 lines** ⚠️ **MEDIUM PRIORITY**
+### 2. `pkg/gedcom/query/hybrid_builder.go` - **64 lines** ✅ **REFACTORED**
 
-**Current Responsibilities:**
-- SQLite schema creation and initialization
-- BadgerDB initialization
-- Building graph in SQLite (indexes, metadata)
-- Building graph in BadgerDB (nodes, edges, serialization)
-- Edge building for all node types
-- Date parsing and normalization
-- Component detection and storage
+**Status**: ✅ **COMPLETED** - Successfully refactored into multiple focused files
 
-**Issues:**
-- **Mixed storage backends**: SQLite and BadgerDB logic in same file
-- **Large functions**: `buildGraphInSQLite` and `buildGraphInBadgerDB` are very long
-- **Repetitive patterns**: Similar code for different node types
+**Original State:**
+- Was 1,060 lines with mixed SQLite and BadgerDB logic
+- Large functions and repetitive patterns
 
-**Recommendations:**
-1. **Split by Storage Backend**:
-   - `hybrid_sqlite_builder.go` - All SQLite operations
-   - `hybrid_badger_builder.go` - All BadgerDB operations
-2. **Extract Common Patterns**: Create helper functions for node type processing
-3. **Separate Schema Management**: Move schema creation to `hybrid_schema.go`
+**Refactored Structure:**
+1. ✅ **`hybrid_builder.go`** (64 lines) - Coordinator function only
+2. ✅ **`hybrid_sqlite_builder.go`** - All SQLite operations (indexes, metadata)
+3. ✅ **`hybrid_badger_builder.go`** - All BadgerDB operations (nodes, edges, serialization)
+4. ✅ **`hybrid_builder_helpers.go`** - Common helper functions (date parsing, normalization)
 
-**Estimated Impact**: Medium - Would improve clarity and make storage backends easier to maintain independently
+**Result:**
+- **Improved clarity**: Clear separation between SQLite and BadgerDB operations
+- **Better maintainability**: Each storage backend can be maintained independently
+- **Reduced complexity**: Smaller, focused files with single responsibilities
 
 ---
 
-### 3. `pkg/gedcom/query/filter_query.go` - **572 lines** ⚠️ **LOW PRIORITY**
+### 3. `pkg/gedcom/query/filter_query.go` - **52 lines** ✅ **REFACTORED**
 
-**Current Responsibilities:**
-- Filter query structure and execution
-- All filter types (ByName, BySurname, ByGivenName, ByBirthDate, BySex, etc.)
-- Index integration
-- Hybrid storage query integration
-- Result caching
+**Status**: ✅ **COMPLETED** - Successfully refactored into multiple focused files
 
-**Issues:**
+**Original State:**
+- Was 572 lines with all filter types and execution logic mixed together
+
+**Refactored Structure:**
+1. ✅ **`filter_query.go`** (52 lines) - Core FilterQuery struct and basic methods
+2. ✅ **`filter_name.go`** - Name-based filters (ByName, BySurname, ByGivenName, etc.)
+3. ✅ **`filter_date.go`** - Date-based filters (ByBirthDate, ByBirthYear, etc.)
+4. ✅ **`filter_attributes.go`** - Attribute filters (BySex, HasChildren, HasSpouse, etc.)
+5. ✅ **`filter_execution.go`** - Execution logic (Execute, executeEager, executeHybrid)
+
+**Result:**
+- **Better organization**: Filters grouped by type
+- **Improved maintainability**: Each filter category in its own file
+- **Clear separation**: Execution logic separated from filter definitions
 - **Many filter methods**: 20+ filter methods in one file
 - **Mixed execution modes**: Eager, lazy, and hybrid execution logic
 
@@ -247,9 +247,21 @@ This analysis identifies large files, code organization issues, and refactoring 
 
 | File | Lines | Functions | Types | Priority |
 |------|-------|-----------|-------|----------|
-| `graph.go` | 1,225 | ~50+ | ~10 | **HIGH** |
-| `hybrid_builder.go` | 1,060 | ~15 | ~5 | **MEDIUM** |
-| `filter_query.go` | 572 | ~30 | ~3 | **LOW** |
+| `graph.go` | 114 | ~5 | ~2 | **COMPLETED** ✅ |
+| `graph_nodes.go` | 298 | ~15 | ~3 | - |
+| `graph_edges.go` | 101 | ~8 | ~2 | - |
+| `graph_hybrid.go` | 387 | ~20 | ~5 | - |
+| `graph_hybrid_helpers.go` | 178 | ~10 | ~2 | - |
+| `graph_metrics.go` | 421 | ~25 | ~5 | - |
+| `hybrid_builder.go` | 64 | ~2 | ~1 | **COMPLETED** ✅ |
+| `hybrid_sqlite_builder.go` | 490 | ~15 | ~3 | - |
+| `hybrid_badger_builder.go` | 806 | ~20 | ~4 | - |
+| `hybrid_builder_helpers.go` | 37 | ~3 | ~1 | - |
+| `filter_query.go` | 52 | ~3 | ~1 | **COMPLETED** ✅ |
+| `filter_name.go` | 44 | ~5 | ~1 | - |
+| `filter_date.go` | 45 | ~5 | ~1 | - |
+| `filter_attributes.go` | 84 | ~6 | ~1 | - |
+| `filter_execution.go` | 379 | ~15 | ~2 | - |
 | `stress_test.go` | 1,380 | ~20 | ~5 | **LOW** |
 
 ---

@@ -871,12 +871,12 @@ func testGraphConstructionLazy(t *testing.T, tree *gedcom.GedcomTree, size int, 
 		NumGC:         numGCAfter - numGCBefore,
 		Success:       true,
 	}
-	
+
 	// Store graph reference for component detection
 	if lazy {
 		metrics.Graph = graph
 	}
-	
+
 	return metrics
 }
 
@@ -1029,7 +1029,7 @@ func testComponentDetectionLazy(t *testing.T, tree *gedcom.GedcomTree, size int)
 		sampleSize = 1000
 		t.Logf("Sampling first 1000 of %d components to find largest", componentCount)
 	}
-	
+
 	for i := uint32(1); i <= sampleSize; i++ {
 		compSize := graph.GetComponentSize(i)
 		if compSize > largestSize {
@@ -1096,7 +1096,7 @@ func TestStress_LazyLoading_Comprehensive(t *testing.T) {
 		eagerStart := time.Now()
 		eagerGraph, err := query.BuildGraph(tree)
 		eagerDuration := time.Since(eagerStart)
-		
+
 		if err != nil {
 			t.Errorf("Eager loading failed: %v", err)
 			continue
@@ -1155,8 +1155,8 @@ func TestStress_LazyLoading_Comprehensive(t *testing.T) {
 		}
 
 		t.Logf("  Speed: %.1fx faster (%.1f%% improvement)", speedup, (speedup-1)*100)
-		t.Logf("  Memory: %.1f%% reduction (%.2f MB saved)", 
-			memorySavings, 
+		t.Logf("  Memory: %.1f%% reduction (%.2f MB saved)",
+			memorySavings,
 			float64(eagerMemory-lazyMemory)/(1024*1024))
 
 		// Test query performance with lazy loading
@@ -1278,7 +1278,7 @@ func TestStress_LazyLoading_5M(t *testing.T) {
 
 	t.Logf("\n✓ 5M lazy loading test completed successfully!")
 	t.Logf("  Previous eager loading: OOM killed at ~70-75 GB")
-	t.Logf("  Lazy loading: Peak memory %.2f MB (%.2f GB)", 
+	t.Logf("  Lazy loading: Peak memory %.2f MB (%.2f GB)",
 		float64(lazyTotalAlloc)/(1024*1024),
 		float64(lazyTotalAlloc)/(1024*1024*1024))
 }
@@ -1332,7 +1332,7 @@ func TestStress_LazyLoading_10M(t *testing.T) {
 	t.Logf("  Duration: %v", lazyDuration)
 	t.Logf("  Construction rate: %.0f individuals/sec", float64(size)/lazyDuration.Seconds())
 	t.Logf("  Memory: %.2f MB", float64(lazyMemory)/(1024*1024))
-	t.Logf("  Peak Memory: %.2f MB (%.2f GB)", 
+	t.Logf("  Peak Memory: %.2f MB (%.2f GB)",
 		float64(lazyTotalAlloc)/(1024*1024),
 		float64(lazyTotalAlloc)/(1024*1024*1024))
 	t.Logf("  Nodes: %d (skeleton only)", len(lazyGraph.GetAllIndividuals()))
