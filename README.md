@@ -1,10 +1,10 @@
-# GEDCOM Go
+# ligneous-gedcom (GEDCOM Go)
 
 [![Go Version](https://img.shields.io/badge/go-1.23+-00ADD8?style=flat-square&logo=go)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/lesfleursdelanuitdev/gedcom-go)](https://goreportcard.com/report/github.com/lesfleursdelanuitdev/gedcom-go)
 
-**GEDCOM Go is a research-grade genealogy toolkit for people who want to understand, validate, and explore family history at scale — from a single family tree to entire communities.**
+**ligneous-gedcom** (also known as **GEDCOM Go**) is a research-grade genealogy toolkit for people who want to understand, validate, and explore family history at scale — from a single family tree to entire communities.
 
 It helps you find relationships, detect duplicates, understand data quality, and export meaningful subsets — without hiding complexity or making unsafe assumptions. Whether you're researching your own family (50 to at most 50K individuals) or studying whole populations (500K–5M individuals), this tool provides the precision and safety that serious genealogical research requires.
 
@@ -12,7 +12,7 @@ It helps you find relationships, detect duplicates, understand data quality, and
 
 ## Quick Start
 
-**New to GEDCOM Go? Start here:**
+**New to ligneous-gedcom? Start here:**
 
 ```bash
 # 1. Install the tool
@@ -56,7 +56,7 @@ gedcom export --descendants @I123@ --depth 8 -o branch.json
 
 ## What This Tool Does
 
-GEDCOM Go helps you:
+ligneous-gedcom helps you:
 
 - **Find relationships** — Discover how people are connected, calculate degrees of relationship, trace family lines
 - **Detect potential duplicates** — Identify records that might refer to the same person, with explanations and confidence scores
@@ -388,7 +388,7 @@ gedcom> exit
 
 ## User Workflows
 
-> **📖 Important:** This section explains how to use GEDCOM Go effectively for your research goals.  
+> **📖 Important:** This section explains how to use ligneous-gedcom effectively for your research goals.  
 > The tool behaves differently depending on your dataset size — read the section that matches your situation.
 
 ### For Private Family Researchers (50 to at most 50K individuals)
@@ -550,7 +550,7 @@ gedcom-go/
 
 ### Real-World Performance (1.5M Individuals)
 
-GEDCOM Go has been stress-tested with **1.5 million individuals** (375,000 families). Here are the results:
+ligneous-gedcom has been stress-tested with **1.5 million individuals** (375,000 families). Here are the results:
 
 **Overall Performance:**
 - **Total Duration:** ~105 seconds (1 minute 45 seconds) for complete workflow
