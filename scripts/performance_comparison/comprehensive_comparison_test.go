@@ -1,3 +1,6 @@
+//go:build external_comparison
+// +build external_comparison
+
 package performance_comparison
 
 import (

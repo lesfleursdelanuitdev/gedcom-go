@@ -1,71 +1,69 @@
-# Parser Performance Comparison
+# Performance Comparison Tests
 
-This directory contains performance comparison tests between:
-- **cacack/gedcom-go**: Pure Go library for parsing GEDCOM files
-- **lesfleursdelanuitdev/gedcom-go**: Research-grade genealogy toolkit
+This directory contains performance comparison tests for the ligneous-gedcom parser.
 
-## Test Files
+## Test Categories
 
-The comparison uses GEDCOM 5.5.1 compatible test files from:
-- `gedcom-go-cacack/testdata/gedcom-5.5.1/` - GEDCOM 5.5.1 specific files
-- `gedcom-go-cacack/testdata/gedcom-5.5/` - GEDCOM 5.5 files (compatible with 5.5.1)
-- `gedcom-go/testdata/` - User's project test files
-- `family-tree/gedcom/` - Additional test files
+### Internal Parser Comparison (Always Available)
 
-## Running the Tests
+**Test:** `TestInternalParserComparison`
 
-### Detailed Comparison Test
+Compares all internal parsers (HierarchicalParser, ParallelHierarchicalParser, TwoPhaseParser, StreamingParser, SmartParser).
 
+**Run:**
 ```bash
-cd /apps/gedcom-go
-go test -v ./scripts/performance_comparison -run TestParserComparison
+go test ./scripts/performance_comparison -run TestInternalParserComparison
 ```
 
-This will:
-- Test each parser on all available GEDCOM 5.5.1 compatible files
-- Report parsing time, throughput, and memory usage
-- Compare results side-by-side
+### External Parser Comparison (Requires Build Tag)
 
-### Benchmark Tests
+**Tests:** `TestComprehensiveComparison`, `TestParserComparison`, `TestRoyal92Comparison`
 
-Run benchmarks for the cacack parser:
+These tests compare ligneous-gedcom parsers with external parsers:
+- `cacack/gedcom-go`
+- `elliotchance/gedcom`
+
+**These tests are excluded from normal test runs** to avoid integration test failures when external dependencies are not available.
+
+**To run external comparison tests:**
 ```bash
-go test -bench=BenchmarkCacackParser -benchmem ./scripts/performance_comparison
+# Run with build tag
+go test -tags=external_comparison ./scripts/performance_comparison -run TestComprehensiveComparison -timeout 30m
+
+# Or run all external comparison tests
+go test -tags=external_comparison ./scripts/performance_comparison -timeout 30m
 ```
 
-Run benchmarks for the user parser:
+**Note:** External comparison tests require:
+- `gedcom-go-cacack` repository cloned at `/apps/gedcom-go-cacack`
+- `gedcom-elliotchance` repository cloned at `/apps/gedcom-elliotchance`
+- Dependencies: `github.com/cacack/gedcom-go` and `github.com/elliotchance/gedcom/v39`
+
+## Why Build Tags?
+
+The external comparison tests use build tags (`//go:build external_comparison`) to exclude them from normal test runs because:
+
+1. **External dependencies** - They require other repositories to be cloned locally
+2. **Integration test failures** - They cause failures in CI/CD when external repos aren't available
+3. **Optional feature** - Performance comparison with external parsers is optional, not required for core functionality
+
+## Running All Tests
+
+**Normal test run (excludes external comparisons):**
 ```bash
-go test -bench=BenchmarkUserParser -benchmem ./scripts/performance_comparison
+go test ./scripts/performance_comparison
 ```
 
-Run both and compare:
+**With external comparisons:**
 ```bash
-go test -bench=. -benchmem ./scripts/performance_comparison | tee benchmark_results.txt
+go test -tags=external_comparison ./scripts/performance_comparison
 ```
 
-## What's Tested
+## Documentation
 
-**Parser Performance Only** - This comparison focuses solely on parsing performance:
-- File reading and parsing speed
-- Memory allocations
-- Throughput (KB/s)
-
-**Not Tested** (these are separate concerns):
-- Graph construction
-- Query performance
-- Validation
-- Error handling
-
-## Expected Results
-
-Based on initial tests:
-- **cacack/gedcom-go**: Optimized for pure parsing, typically faster for small-medium files
-- **lesfleursdelanuitdev/gedcom-go**: More comprehensive toolkit with additional features, may be slightly slower for pure parsing but provides more functionality
-
-## Notes
-
-- Both parsers are tested with the same input files for fair comparison
-- Files are read into memory once to eliminate I/O variance
-- Each test runs 10 iterations and reports average time
-- Allocation tracking requires using `-benchmem` flag with benchmarks
-
+See the various `.md` files in this directory for detailed analysis and results:
+- `CODE_COMPARISON.md` - Code comparison between parsers
+- `ELLIOTCHANCE_PERFORMANCE_ANALYSIS.md` - Why elliotchance/gedcom is slower
+- `FINAL_RESULTS_ANALYSIS.md` - Performance results analysis
+- `OPTIMIZATION_PLAN.md` - Optimization strategies
+- And more...
