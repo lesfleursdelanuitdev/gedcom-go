@@ -48,12 +48,12 @@ func getMemStats() (alloc, totalAlloc, sys uint64, numGC uint32, numGoroutines i
 
 // generateStressTestTree creates a tree with n individuals for stress testing
 // Uses realistic family structures with varying complexity
-func generateStressTestTree(n int) *gedcom.GedcomTree {
-	tree := gedcom.NewGedcomTree()
+func generateStressTestTree(n int) *types.GedcomTree {
+	tree := types.NewGedcomTree()
 
 	// Pre-allocate slices for better performance
-	individuals := make([]*gedcom.IndividualRecord, 0, n)
-	families := make([]*gedcom.FamilyRecord, 0, n/2)
+	individuals := make([]*types.IndividualRecord, 0, n)
+	families := make([]*types.FamilyRecord, 0, n/2)
 
 	// Track relationships
 	childToFamily := make(map[int]int, n)
@@ -79,55 +79,55 @@ func generateStressTestTree(n int) *gedcom.GedcomTree {
 		}
 
 		// Create family
-		famLine := gedcom.NewGedcomLine(0, "FAM", "", fmt.Sprintf("@F%d@", familyID))
+		famLine := types.NewGedcomLine(0, "FAM", "", fmt.Sprintf("@F%d@", familyID))
 
 		// Husband
 		if indiID < n {
-			famLine.AddChild(gedcom.NewGedcomLine(1, "HUSB", fmt.Sprintf("@I%d@", indiID), ""))
+			famLine.AddChild(types.NewGedcomLine(1, "HUSB", fmt.Sprintf("@I%d@", indiID), ""))
 			indiID++
 		}
 
 		// Wife
 		if indiID < n {
-			famLine.AddChild(gedcom.NewGedcomLine(1, "WIFE", fmt.Sprintf("@I%d@", indiID), ""))
+			famLine.AddChild(types.NewGedcomLine(1, "WIFE", fmt.Sprintf("@I%d@", indiID), ""))
 			indiID++
 		}
 
 		// Children
 		for i := 0; i < numChildren && indiID < n; i++ {
-			famLine.AddChild(gedcom.NewGedcomLine(1, "CHIL", fmt.Sprintf("@I%d@", indiID), ""))
+			famLine.AddChild(types.NewGedcomLine(1, "CHIL", fmt.Sprintf("@I%d@", indiID), ""))
 			childToFamily[indiID] = familyID
 			indiID++
 		}
 
-		fam := gedcom.NewFamilyRecord(famLine)
+		fam := types.NewFamilyRecord(famLine)
 		families = append(families, fam)
 		familyID++
 	}
 
 	// Create all individuals with varied data
 	for i := 1; i <= n; i++ {
-		indiLine := gedcom.NewGedcomLine(0, "INDI", "", fmt.Sprintf("@I%d@", i))
+		indiLine := types.NewGedcomLine(0, "INDI", "", fmt.Sprintf("@I%d@", i))
 
 		// Add name with variation
-		indiLine.AddChild(gedcom.NewGedcomLine(1, "NAME", fmt.Sprintf("Person %d /Test/", i), ""))
+		indiLine.AddChild(types.NewGedcomLine(1, "NAME", fmt.Sprintf("Person %d /Test/", i), ""))
 
 		// Add birth date (distributed across years 1800-2000)
 		birthYear := 1800 + (i % 200)
-		birtLine := gedcom.NewGedcomLine(1, "BIRT", "", "")
-		birtLine.AddChild(gedcom.NewGedcomLine(2, "DATE", fmt.Sprintf("%d", birthYear), ""))
+		birtLine := types.NewGedcomLine(1, "BIRT", "", "")
+		birtLine.AddChild(types.NewGedcomLine(2, "DATE", fmt.Sprintf("%d", birthYear), ""))
 
 		// Add birth place for some individuals (every 10th)
 		if i%10 == 0 {
-			birtLine.AddChild(gedcom.NewGedcomLine(2, "PLAC", fmt.Sprintf("City %d", i%50), ""))
+			birtLine.AddChild(types.NewGedcomLine(2, "PLAC", fmt.Sprintf("City %d", i%50), ""))
 		}
 		indiLine.AddChild(birtLine)
 
 		// Add death date for some individuals (every 5th)
 		if i%5 == 0 {
 			deathYear := birthYear + 50 + (i % 50)
-			deatLine := gedcom.NewGedcomLine(1, "DEAT", "", "")
-			deatLine.AddChild(gedcom.NewGedcomLine(2, "DATE", fmt.Sprintf("%d", deathYear), ""))
+			deatLine := types.NewGedcomLine(1, "DEAT", "", "")
+			deatLine.AddChild(types.NewGedcomLine(2, "DATE", fmt.Sprintf("%d", deathYear), ""))
 			indiLine.AddChild(deatLine)
 		}
 
@@ -136,14 +136,14 @@ func generateStressTestTree(n int) *gedcom.GedcomTree {
 		if i%2 == 0 {
 			sex = "F"
 		}
-		indiLine.AddChild(gedcom.NewGedcomLine(1, "SEX", sex, ""))
+		indiLine.AddChild(types.NewGedcomLine(1, "SEX", sex, ""))
 
 		// Add FAMC if child
 		if famID, ok := childToFamily[i]; ok {
-			indiLine.AddChild(gedcom.NewGedcomLine(1, "FAMC", fmt.Sprintf("@F%d@", famID), ""))
+			indiLine.AddChild(types.NewGedcomLine(1, "FAMC", fmt.Sprintf("@F%d@", famID), ""))
 		}
 
-		indi := gedcom.NewIndividualRecord(indiLine)
+		indi := types.NewIndividualRecord(indiLine)
 		individuals = append(individuals, indi)
 	}
 
@@ -361,7 +361,7 @@ func runStressTestPhases(t *testing.T, size int, allMetrics *[]StressTestMetrics
 
 	// Parse GEDCOM file
 	t.Log("Parsing GEDCOM file...")
-	var parsedTree *gedcom.GedcomTree
+	var parsedTree *types.GedcomTree
 	*allMetrics = append(*allMetrics, runStressTest("Parsing", size, func() error {
 		parser := parser.NewHierarchicalParser()
 		var err error
@@ -807,7 +807,7 @@ func TestStress_LazyLoading_1M(t *testing.T) {
 }
 
 // testGraphConstructionLazy tests graph construction in either eager or lazy mode
-func testGraphConstructionLazy(t *testing.T, tree *gedcom.GedcomTree, size int, lazy bool, mode string) StressTestMetrics {
+func testGraphConstructionLazy(t *testing.T, tree *types.GedcomTree, size int, lazy bool, mode string) StressTestMetrics {
 	before, _, _, numGCBefore, _ := getMemStats()
 	start := time.Now()
 
@@ -881,7 +881,7 @@ func testGraphConstructionLazy(t *testing.T, tree *gedcom.GedcomTree, size int, 
 }
 
 // testQueryPerformanceLazy tests query performance with lazy loading
-func testQueryPerformanceLazy(t *testing.T, tree *gedcom.GedcomTree, size int, lazy bool) {
+func testQueryPerformanceLazy(t *testing.T, tree *types.GedcomTree, size int, lazy bool) {
 	var q *query.QueryBuilder
 	var err error
 
@@ -1009,7 +1009,7 @@ func TestStress_LazyLoading_1_5M(t *testing.T) {
 }
 
 // testComponentDetectionLazy tests component detection and loading
-func testComponentDetectionLazy(t *testing.T, tree *gedcom.GedcomTree, size int) {
+func testComponentDetectionLazy(t *testing.T, tree *types.GedcomTree, size int) {
 	q, err := query.NewQueryLazy(tree)
 	if err != nil {
 		t.Fatalf("Failed to create lazy query: %v", err)
