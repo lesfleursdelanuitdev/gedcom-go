@@ -50,10 +50,12 @@ type Graph struct {
 	indexes *FilterIndexes
 
 	// Hybrid storage support
-	hybridStorage *HybridStorage
-	hybridMode    bool
-	queryHelpers  *HybridQueryHelpers // SQLite query helpers
-	hybridCache   *HybridCache        // LRU cache for hybrid storage
+	hybridStorage        *HybridStorage              // SQLite storage
+	hybridStoragePostgres *HybridStoragePostgres     // PostgreSQL storage
+	hybridMode           bool
+	queryHelpers         *HybridQueryHelpers         // SQLite query helpers
+	queryHelpersPostgres *HybridQueryHelpersPostgres // PostgreSQL query helpers
+	hybridCache          *HybridCache                // LRU cache for hybrid storage
 
 	// Metrics collection (optional)
 	metrics *Metrics

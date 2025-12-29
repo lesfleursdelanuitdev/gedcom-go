@@ -20,8 +20,8 @@ func (g *Graph) GetNode(xrefID string) GraphNode {
 // If lazy mode is enabled, loads the node on-demand.
 // If hybrid mode is enabled, loads the node from BadgerDB.
 func (g *Graph) GetIndividual(xrefID string) *IndividualNode {
-	// If hybrid mode, load from BadgerDB
-	if g.hybridMode && g.hybridStorage != nil {
+	// If hybrid mode, load from BadgerDB (SQLite or PostgreSQL)
+	if g.hybridMode && (g.hybridStorage != nil || g.hybridStoragePostgres != nil) {
 		if debugHybrid {
 			log.Printf("[HYBRID] GetIndividual: xrefID=%s, hybridMode=true", xrefID)
 		}
@@ -245,6 +245,27 @@ func (g *Graph) GetAllFamilies() map[string]*FamilyNode {
 	return result
 }
 
+// getBaseNode extracts the BaseNode from a GraphNode.
+// All node types embed *BaseNode, so we can access it via type assertion.
+func getBaseNode(node GraphNode) *BaseNode {
+	switch n := node.(type) {
+	case *IndividualNode:
+		return n.BaseNode
+	case *FamilyNode:
+		return n.BaseNode
+	case *NoteNode:
+		return n.BaseNode
+	case *SourceNode:
+		return n.BaseNode
+	case *RepositoryNode:
+		return n.BaseNode
+	case *EventNode:
+		return n.BaseNode
+	default:
+		return nil
+	}
+}
+
 // AddNode adds a node to the graph (external API - still uses XREF strings).
 func (g *Graph) AddNode(node GraphNode) error {
 	g.mu.Lock()
@@ -261,6 +282,11 @@ func (g *Graph) AddNode(node GraphNode) error {
 	// Check if node already exists
 	if _, exists := g.nodes[internalID]; exists {
 		return fmt.Errorf("node with ID %s already exists", xrefID)
+	}
+
+	// Phase 3: Store nodeID on BaseNode for fast access (eliminates GetNodeID() overhead)
+	if baseNode := getBaseNode(node); baseNode != nil {
+		baseNode.nodeID = internalID
 	}
 
 	// Add to nodes map (using uint32 ID)

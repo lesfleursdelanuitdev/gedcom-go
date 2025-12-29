@@ -263,6 +263,11 @@ func (g *Graph) addNodeInternal(node GraphNode) error {
 		return fmt.Errorf("node with ID %s already exists", xrefID)
 	}
 
+	// Phase 3: Store nodeID on BaseNode for fast access (eliminates GetNodeID() overhead)
+	if baseNode := getBaseNode(node); baseNode != nil {
+		baseNode.nodeID = internalID
+	}
+
 	// Add to nodes map (using uint32 ID)
 	g.nodes[internalID] = node
 

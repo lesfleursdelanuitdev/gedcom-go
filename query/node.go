@@ -62,6 +62,7 @@ type GraphNode interface {
 // BaseNode provides common functionality for all graph nodes.
 type BaseNode struct {
 	xrefID   string
+	nodeID   uint32 // Phase 3: Cached uint32 ID for fast access (eliminates GetNodeID() overhead)
 	nodeType NodeType
 	record   types.Record
 	inEdges  []*Edge
@@ -178,8 +179,16 @@ type IndividualNode struct {
 	*BaseNode
 	Individual *types.IndividualRecord
 
+	// Phase 1: Indexed edges for fast access (populated during graph construction)
+	famcEdges []*Edge // Only FAMC edges (parent families) - for fast ancestor queries
+	famsEdges []*Edge // Only FAMS edges (spouse families) - for fast spouse/child queries
+
+	// Phase 2: Cached parents for O(1) access (populated during graph construction)
+	parents []*IndividualNode // Direct parent references - eliminates edge traversal
+
 	// Note: Relationships (Parents, Children, Spouses, Siblings) are now computed
 	// on-demand from edges to save memory. Use helper methods or query API.
+	// With optimizations, parents are cached for fast access.
 }
 
 // NewIndividualNode creates a new IndividualNode.
@@ -194,6 +203,9 @@ func NewIndividualNode(xrefID string, record *types.IndividualRecord) *Individua
 			outEdges: make([]*Edge, 0),
 		},
 		Individual: record,
+		famcEdges:  make([]*Edge, 0),
+		famsEdges:  make([]*Edge, 0),
+		parents:    make([]*IndividualNode, 0),
 	}
 }
 
@@ -202,8 +214,14 @@ type FamilyNode struct {
 	*BaseNode
 	Family *types.FamilyRecord
 
+	// Phase 1: Indexed edges for fast access (populated during graph construction)
+	husbandEdge *Edge      // Only HUSB edge (or nil) - O(1) access instead of O(n) scan
+	wifeEdge    *Edge      // Only WIFE edge (or nil) - O(1) access instead of O(n) scan
+	chilEdges   []*Edge    // Only CHIL edges - eliminates filtering
+
 	// Note: Relationships (Husband, Wife, Children) are now computed
 	// on-demand from edges to save memory. Use helper methods or query API.
+	// With optimizations, husband/wife are directly accessible via indexed edges.
 }
 
 // NewFamilyNode creates a new FamilyNode.
@@ -217,7 +235,10 @@ func NewFamilyNode(xrefID string, record *types.FamilyRecord) *FamilyNode {
 			inEdges:  make([]*Edge, 0),
 			outEdges: make([]*Edge, 0),
 		},
-		Family: record,
+		Family:      record,
+		husbandEdge: nil,
+		wifeEdge:    nil,
+		chilEdges:   make([]*Edge, 0),
 	}
 }
 

@@ -125,6 +125,9 @@ func createEdges(graph *Graph, tree *types.GedcomTree) error {
 		return fmt.Errorf("failed to create family edges: %w", err)
 	}
 
+	// Phase 2: Populate parent cache for fast ancestor queries
+	populateParentCache(graph)
+
 	// Phase 2.2: Create reference edges (NOTE, SOUR, REPO)
 	if err := createReferenceEdges(graph, tree); err != nil {
 		return fmt.Errorf("failed to create reference edges: %w", err)
@@ -136,6 +139,38 @@ func createEdges(graph *Graph, tree *types.GedcomTree) error {
 	}
 
 	return nil
+}
+
+// populateParentCache populates the parent cache for all individuals (Phase 2 optimization).
+// This enables O(1) parent access instead of O(n) edge traversal.
+func populateParentCache(graph *Graph) {
+	graph.mu.Lock()
+	defer graph.mu.Unlock()
+
+	// Iterate through all individuals and populate their parent cache
+	for _, indiNode := range graph.individuals {
+		parents := make([]*IndividualNode, 0, 2) // Most individuals have 2 parents
+
+		// Use indexed FAMC edges for fast access
+		for _, edge := range indiNode.famcEdges {
+			if edge.Family != nil {
+				famNode := edge.Family
+				// Use indexed edges for O(1) access
+				if famNode.husbandEdge != nil {
+					if husband, ok := famNode.husbandEdge.To.(*IndividualNode); ok {
+						parents = append(parents, husband)
+					}
+				}
+				if famNode.wifeEdge != nil {
+					if wife, ok := famNode.wifeEdge.To.(*IndividualNode); ok {
+						parents = append(parents, wife)
+					}
+				}
+			}
+		}
+
+		indiNode.parents = parents
+	}
 }
 
 // createFamilyEdges creates edges between Individual and Family nodes.
@@ -165,12 +200,18 @@ func createFamilyEdges(graph *Graph, tree *types.GedcomTree) error {
 					return fmt.Errorf("failed to add HUSB edge: %w", err)
 				}
 
+				// Phase 1: Index the HUSB edge for fast access
+				famNode.husbandEdge = edge
+
 				// Individual --[FAMS]--> Family (reverse)
 				edgeID2 := fmt.Sprintf("%s_FAMS_%s", husbandXref, famXref)
 				edge2 := NewEdgeWithFamily(edgeID2, husbandNode, famNode, EdgeTypeFAMS, famNode)
 				if err := graph.AddEdge(edge2); err != nil {
 					return fmt.Errorf("failed to add FAMS edge: %w", err)
 				}
+
+				// Phase 1: Index the FAMS edge for fast access
+				husbandNode.famsEdges = append(husbandNode.famsEdges, edge2)
 			}
 		}
 
@@ -186,12 +227,18 @@ func createFamilyEdges(graph *Graph, tree *types.GedcomTree) error {
 					return fmt.Errorf("failed to add WIFE edge: %w", err)
 				}
 
+				// Phase 1: Index the WIFE edge for fast access
+				famNode.wifeEdge = edge
+
 				// Individual --[FAMS]--> Family (reverse)
 				edgeID2 := fmt.Sprintf("%s_FAMS_%s", wifeXref, famXref)
 				edge2 := NewEdgeWithFamily(edgeID2, wifeNode, famNode, EdgeTypeFAMS, famNode)
 				if err := graph.AddEdge(edge2); err != nil {
 					return fmt.Errorf("failed to add FAMS edge: %w", err)
 				}
+
+				// Phase 1: Index the FAMS edge for fast access
+				wifeNode.famsEdges = append(wifeNode.famsEdges, edge2)
 			}
 		}
 
@@ -210,12 +257,18 @@ func createFamilyEdges(graph *Graph, tree *types.GedcomTree) error {
 				return fmt.Errorf("failed to add CHIL edge: %w", err)
 			}
 
+			// Phase 1: Index the CHIL edge for fast access
+			famNode.chilEdges = append(famNode.chilEdges, edge)
+
 			// Individual --[FAMC]--> Family (reverse)
 			edgeID2 := fmt.Sprintf("%s_FAMC_%s_%d", childXref, famXref, i)
 			edge2 := NewEdgeWithFamily(edgeID2, childNode, famNode, EdgeTypeFAMC, famNode)
 			if err := graph.AddEdge(edge2); err != nil {
 				return fmt.Errorf("failed to add FAMC edge: %w", err)
 			}
+
+			// Phase 1: Index the FAMC edge for fast access
+			childNode.famcEdges = append(childNode.famcEdges, edge2)
 		}
 	}
 

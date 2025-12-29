@@ -8,22 +8,34 @@ func (node *IndividualNode) Parents() []*IndividualNode {
 }
 
 // getParentsFromEdges computes parents from edges (replaces cached Parents field).
+// Phase 1: Optimized to use indexed edges. Phase 2: Uses cached parents if available.
 func (node *IndividualNode) getParentsFromEdges() []*IndividualNode {
-	parents := make([]*IndividualNode, 0)
+	// Phase 2: Use cached parents for O(1) access (fastest)
+	if len(node.parents) > 0 {
+		return node.parents
+	}
+
+	// Phase 1: Use indexed FAMC edges (no filtering needed)
+	parents := make([]*IndividualNode, 0, 2)
 	seen := make(map[string]bool)
 
-	// Find parents via FAMC edges
-	for _, edge := range node.OutEdges() {
-		if edge.EdgeType == EdgeTypeFAMC && edge.Family != nil {
+	for _, edge := range node.famcEdges {
+		if edge.Family != nil {
 			famNode := edge.Family
-			// Get parents from family's HUSB/WIFE edges
-			for _, famEdge := range famNode.OutEdges() {
-				if (famEdge.EdgeType == EdgeTypeHUSB || famEdge.EdgeType == EdgeTypeWIFE) {
-					if indiNode, ok := famEdge.To.(*IndividualNode); ok {
-						if !seen[indiNode.ID()] {
-							seen[indiNode.ID()] = true
-							parents = append(parents, indiNode)
-						}
+			// Phase 1: Use indexed edges for O(1) access
+			if famNode.husbandEdge != nil {
+				if indiNode, ok := famNode.husbandEdge.To.(*IndividualNode); ok {
+					if !seen[indiNode.ID()] {
+						seen[indiNode.ID()] = true
+						parents = append(parents, indiNode)
+					}
+				}
+			}
+			if famNode.wifeEdge != nil {
+				if indiNode, ok := famNode.wifeEdge.To.(*IndividualNode); ok {
+					if !seen[indiNode.ID()] {
+						seen[indiNode.ID()] = true
+						parents = append(parents, indiNode)
 					}
 				}
 			}
@@ -41,22 +53,21 @@ func (node *IndividualNode) Children() []*IndividualNode {
 }
 
 // getChildrenFromEdges computes children from edges (replaces cached Children field).
+// Phase 1: Optimized to use indexed edges for faster access.
 func (node *IndividualNode) getChildrenFromEdges() []*IndividualNode {
 	children := make([]*IndividualNode, 0)
 	seen := make(map[string]bool)
 
-	// Find children via FAMS -> Family -> CHIL edges
-	for _, edge := range node.OutEdges() {
-		if edge.EdgeType == EdgeTypeFAMS && edge.Family != nil {
+	// Phase 1: Use indexed FAMS edges (no filtering needed)
+	for _, edge := range node.famsEdges {
+		if edge.Family != nil {
 			famNode := edge.Family
-			// Get children from family's CHIL edges
-			for _, famEdge := range famNode.OutEdges() {
-				if famEdge.EdgeType == EdgeTypeCHIL {
-					if indiNode, ok := famEdge.To.(*IndividualNode); ok {
-						if !seen[indiNode.ID()] {
-							seen[indiNode.ID()] = true
-							children = append(children, indiNode)
-						}
+			// Phase 1: Use indexed CHIL edges (no filtering needed)
+			for _, famEdge := range famNode.chilEdges {
+				if indiNode, ok := famEdge.To.(*IndividualNode); ok {
+					if !seen[indiNode.ID()] {
+						seen[indiNode.ID()] = true
+						children = append(children, indiNode)
 					}
 				}
 			}
@@ -74,22 +85,29 @@ func (node *IndividualNode) Spouses() []*IndividualNode {
 }
 
 // getSpousesFromEdges computes spouses from edges (replaces cached Spouses field).
+// Phase 1: Optimized to use indexed edges for faster access.
 func (node *IndividualNode) getSpousesFromEdges() []*IndividualNode {
 	spouses := make([]*IndividualNode, 0)
 	seen := make(map[string]bool)
 
-	// Find spouses via FAMS edges
-	for _, edge := range node.OutEdges() {
-		if edge.EdgeType == EdgeTypeFAMS && edge.Family != nil {
+	// Phase 1: Use indexed FAMS edges (no filtering needed)
+	for _, edge := range node.famsEdges {
+		if edge.Family != nil {
 			famNode := edge.Family
-			// Get spouse from family's HUSB/WIFE edges (the other spouse)
-			for _, famEdge := range famNode.OutEdges() {
-				if (famEdge.EdgeType == EdgeTypeHUSB || famEdge.EdgeType == EdgeTypeWIFE) {
-					if indiNode, ok := famEdge.To.(*IndividualNode); ok {
-						if indiNode.ID() != node.ID() && !seen[indiNode.ID()] {
-							seen[indiNode.ID()] = true
-							spouses = append(spouses, indiNode)
-						}
+			// Phase 1: Use indexed edges for O(1) access
+			if famNode.husbandEdge != nil {
+				if indiNode, ok := famNode.husbandEdge.To.(*IndividualNode); ok {
+					if indiNode.ID() != node.ID() && !seen[indiNode.ID()] {
+						seen[indiNode.ID()] = true
+						spouses = append(spouses, indiNode)
+					}
+				}
+			}
+			if famNode.wifeEdge != nil {
+				if indiNode, ok := famNode.wifeEdge.To.(*IndividualNode); ok {
+					if indiNode.ID() != node.ID() && !seen[indiNode.ID()] {
+						seen[indiNode.ID()] = true
+						spouses = append(spouses, indiNode)
 					}
 				}
 			}
@@ -107,27 +125,26 @@ func (node *IndividualNode) Siblings() []*IndividualNode {
 }
 
 // getSiblingsFromEdges computes siblings from edges (replaces cached Siblings field).
+// Phase 1: Optimized to use indexed edges for faster access.
 func (node *IndividualNode) getSiblingsFromEdges() []*IndividualNode {
 	siblings := make([]*IndividualNode, 0)
 	seen := make(map[string]bool)
 
-	// Find siblings via shared FAMC (parent families)
+	// Phase 1: Use indexed FAMC edges (no filtering needed)
 	parentFamilies := make(map[string]*FamilyNode)
-	for _, edge := range node.OutEdges() {
-		if edge.EdgeType == EdgeTypeFAMC && edge.Family != nil {
+	for _, edge := range node.famcEdges {
+		if edge.Family != nil {
 			parentFamilies[edge.Family.ID()] = edge.Family
 		}
 	}
 
-	// Get siblings from parent families' children
+	// Phase 1: Use indexed CHIL edges (no filtering needed)
 	for _, famNode := range parentFamilies {
-		for _, famEdge := range famNode.OutEdges() {
-			if famEdge.EdgeType == EdgeTypeCHIL {
-				if indiNode, ok := famEdge.To.(*IndividualNode); ok {
-					if indiNode.ID() != node.ID() && !seen[indiNode.ID()] {
-						seen[indiNode.ID()] = true
-						siblings = append(siblings, indiNode)
-					}
+		for _, famEdge := range famNode.chilEdges {
+			if indiNode, ok := famEdge.To.(*IndividualNode); ok {
+				if indiNode.ID() != node.ID() && !seen[indiNode.ID()] {
+					seen[indiNode.ID()] = true
+					siblings = append(siblings, indiNode)
 				}
 			}
 		}
@@ -144,7 +161,15 @@ func (node *FamilyNode) Husband() *IndividualNode {
 }
 
 // getHusbandFromEdges computes husband from edges (replaces cached Husband field).
+// Phase 1: Optimized to use indexed edge for O(1) access.
 func (node *FamilyNode) getHusbandFromEdges() *IndividualNode {
+	// Phase 1: Use indexed edge for O(1) access
+	if node.husbandEdge != nil {
+		if indiNode, ok := node.husbandEdge.To.(*IndividualNode); ok {
+			return indiNode
+		}
+	}
+	// Fallback: Search through all edges (shouldn't happen if graph is properly built)
 	for _, edge := range node.OutEdges() {
 		if edge.EdgeType == EdgeTypeHUSB {
 			if indiNode, ok := edge.To.(*IndividualNode); ok {
@@ -163,7 +188,15 @@ func (node *FamilyNode) Wife() *IndividualNode {
 }
 
 // getWifeFromEdges computes wife from edges (replaces cached Wife field).
+// Phase 1: Optimized to use indexed edge for O(1) access.
 func (node *FamilyNode) getWifeFromEdges() *IndividualNode {
+	// Phase 1: Use indexed edge for O(1) access
+	if node.wifeEdge != nil {
+		if indiNode, ok := node.wifeEdge.To.(*IndividualNode); ok {
+			return indiNode
+		}
+	}
+	// Fallback: Search through all edges (shouldn't happen if graph is properly built)
 	for _, edge := range node.OutEdges() {
 		if edge.EdgeType == EdgeTypeWIFE {
 			if indiNode, ok := edge.To.(*IndividualNode); ok {
@@ -182,13 +215,13 @@ func (node *FamilyNode) Children() []*IndividualNode {
 }
 
 // getChildrenFromEdges computes children from edges (replaces cached Children field).
+// Phase 1: Optimized to use indexed edges for faster access.
 func (node *FamilyNode) getChildrenFromEdges() []*IndividualNode {
-	children := make([]*IndividualNode, 0)
-	for _, edge := range node.OutEdges() {
-		if edge.EdgeType == EdgeTypeCHIL {
-			if indiNode, ok := edge.To.(*IndividualNode); ok {
-				children = append(children, indiNode)
-			}
+	// Phase 1: Use indexed edges - no filtering needed
+	children := make([]*IndividualNode, 0, len(node.chilEdges))
+	for _, edge := range node.chilEdges {
+		if indiNode, ok := edge.To.(*IndividualNode); ok {
+			children = append(children, indiNode)
 		}
 	}
 	return children

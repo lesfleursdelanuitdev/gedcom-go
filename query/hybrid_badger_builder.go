@@ -7,8 +7,14 @@ import (
 	"github.com/lesfleursdelanuitdev/ligneous-gedcom/types"
 )
 
+// BadgerDBStorage is an interface for storage types that have BadgerDB
+type BadgerDBStorage interface {
+	BadgerDB() *badger.DB
+}
+
 // buildGraphInBadgerDB stores graph structure in BadgerDB
-func buildGraphInBadgerDB(storage *HybridStorage, tree *types.GedcomTree, graph *Graph) error {
+// Works with both SQLite and PostgreSQL hybrid storage
+func buildGraphInBadgerDB(storage BadgerDBStorage, tree *types.GedcomTree, graph *Graph) error {
 	db := storage.BadgerDB()
 
 	// Process all node types
@@ -21,10 +27,17 @@ func buildGraphInBadgerDB(storage *HybridStorage, tree *types.GedcomTree, graph 
 		return fmt.Errorf("failed to build edges: %w", err)
 	}
 
-	// Update SQLite indexes with relationship flags (has_children, has_spouse)
+	// Update database indexes with relationship flags (has_children, has_spouse)
 	// This needs to be done after edges are processed
-	if err := updateRelationshipFlags(storage, tree, graph); err != nil {
-		return fmt.Errorf("failed to update relationship flags: %w", err)
+	// Check which storage type we're using
+	if graph.hybridStoragePostgres != nil {
+		if err := updateRelationshipFlagsPostgreSQL(graph.hybridStoragePostgres, tree, graph); err != nil {
+			return fmt.Errorf("failed to update relationship flags: %w", err)
+		}
+	} else if graph.hybridStorage != nil {
+		if err := updateRelationshipFlags(graph.hybridStorage, tree, graph); err != nil {
+			return fmt.Errorf("failed to update relationship flags: %w", err)
+		}
 	}
 
 	return nil
@@ -803,4 +816,3 @@ func processEventEdges(tree *types.GedcomTree, graph *Graph, nodeEdges map[uint3
 
 	return nil
 }
-

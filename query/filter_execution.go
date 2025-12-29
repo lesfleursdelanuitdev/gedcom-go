@@ -20,8 +20,8 @@ func (fq *FilterQuery) Execute() ([]*types.IndividualRecord, error) {
 		}
 	}()
 
-	// If hybrid mode, use SQLite queries
-	if fq.graph.hybridMode && fq.graph.queryHelpers != nil {
+	// If hybrid mode, use database queries (SQLite or PostgreSQL)
+	if fq.graph.hybridMode && (fq.graph.queryHelpers != nil || fq.graph.queryHelpersPostgres != nil) {
 		return fq.executeHybrid()
 	}
 
@@ -204,9 +204,34 @@ func (fq *FilterQuery) executeEager() ([]*types.IndividualRecord, error) {
 	return results, nil
 }
 
-// executeHybrid executes the filter query using hybrid storage (SQLite + BadgerDB)
+// HybridQueryHelper is an interface for both SQLite and PostgreSQL query helpers
+type HybridQueryHelper interface {
+	FindByXref(xref string) (uint32, error)
+	FindXrefByID(nodeID uint32) (string, error)
+	FindByName(pattern string) ([]uint32, error)
+	FindByNameExact(name string) ([]uint32, error)
+	FindByNameStarts(prefix string) ([]uint32, error)
+	FindByBirthDate(start, end time.Time) ([]uint32, error)
+	FindByBirthPlace(place string) ([]uint32, error)
+	FindBySex(sex string) ([]uint32, error)
+	HasChildren(nodeID uint32) (bool, error)
+	HasSpouse(nodeID uint32) (bool, error)
+	IsLiving(nodeID uint32) (bool, error)
+	GetAllIndividualIDs() ([]uint32, error)
+}
+
+// executeHybrid executes the filter query using hybrid storage (SQLite + BadgerDB or PostgreSQL + BadgerDB)
 func (fq *FilterQuery) executeHybrid() ([]*types.IndividualRecord, error) {
-	helpers := fq.graph.queryHelpers
+	// Get the appropriate query helpers (SQLite or PostgreSQL)
+	var helpers HybridQueryHelper
+	if fq.graph.queryHelpersPostgres != nil {
+		helpers = fq.graph.queryHelpersPostgres
+	} else if fq.graph.queryHelpers != nil {
+		helpers = fq.graph.queryHelpers
+	} else {
+		return nil, fmt.Errorf("no query helpers available")
+	}
+
 	var candidateIDs []uint32
 	var err error
 
@@ -234,7 +259,7 @@ func (fq *FilterQuery) executeHybrid() ([]*types.IndividualRecord, error) {
 		}
 
 		if err != nil {
-			return nil, fmt.Errorf("failed to query SQLite: %w", err)
+			return nil, fmt.Errorf("failed to query database: %w", err)
 		}
 
 		// Cache the initial result

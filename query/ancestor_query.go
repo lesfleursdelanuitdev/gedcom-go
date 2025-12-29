@@ -73,16 +73,22 @@ func (aq *AncestorQuery) Execute() ([]*types.IndividualRecord, error) {
 		return nil, nil
 	}
 
-	ancestors := make(map[string]*IndividualNode)
-	visited := make(map[string]bool)
+	// Phase 3: Use cached nodeID directly (eliminates GetNodeID() lock overhead)
+	startNodeID := startNode.BaseNode.nodeID
+	if startNodeID == 0 {
+		return nil, nil
+	}
+
+	ancestors := make(map[uint32]*IndividualNode)
+	visited := make(map[uint32]bool)
 
 	// Add self if requested
 	if aq.options.IncludeSelf {
-		ancestors[startNode.ID()] = startNode
+		ancestors[startNodeID] = startNode
 	}
 
-	// Find ancestors recursively
-	aq.findAncestors(startNode, ancestors, visited, 0)
+	// Find ancestors recursively (pass nodeID to avoid repeated lookups)
+	aq.findAncestors(startNode, startNodeID, ancestors, visited, 0)
 
 	// Convert to records
 	records := make([]*types.IndividualRecord, 0, len(ancestors))
@@ -99,8 +105,11 @@ func (aq *AncestorQuery) Execute() ([]*types.IndividualRecord, error) {
 }
 
 // findAncestors recursively finds ancestors.
-func (aq *AncestorQuery) findAncestors(node *IndividualNode, ancestors map[string]*IndividualNode, visited map[string]bool, depth int) {
-	if visited[node.ID()] {
+// Optimized with Phase 1 (indexed edges, uint32 IDs), Phase 2 (cached parents), and Phase 3 (cached nodeID).
+// Phase 3: Accepts nodeID parameter to eliminate repeated GetNodeID() calls.
+func (aq *AncestorQuery) findAncestors(node *IndividualNode, nodeID uint32, ancestors map[uint32]*IndividualNode, visited map[uint32]bool, depth int) {
+	// Phase 3: nodeID already provided - no lookup needed!
+	if nodeID == 0 || visited[nodeID] {
 		return
 	}
 
@@ -109,21 +118,49 @@ func (aq *AncestorQuery) findAncestors(node *IndividualNode, ancestors map[strin
 		return
 	}
 
-	visited[node.ID()] = true
+	visited[nodeID] = true
 
-	// Find parents via FAMC edges
-	for _, edge := range node.OutEdges() {
-		if edge.EdgeType == EdgeTypeFAMC && edge.Family != nil {
-			famNode := edge.Family
-			husband := famNode.getHusbandFromEdges()
-			if husband != nil {
-				ancestors[husband.ID()] = husband
-				aq.findAncestors(husband, ancestors, visited, depth+1)
+	// Phase 2: Use cached parents for O(1) access (fastest path)
+	if len(node.parents) > 0 {
+		for _, parent := range node.parents {
+			// Phase 3: Use cached nodeID directly - no lock acquisition!
+			parentID := parent.BaseNode.nodeID
+			if parentID != 0 {
+				ancestors[parentID] = parent
+				// Phase 3: Pass parentID through recursion to avoid repeated lookups
+				aq.findAncestors(parent, parentID, ancestors, visited, depth+1)
 			}
-			wife := famNode.getWifeFromEdges()
-			if wife != nil {
-				ancestors[wife.ID()] = wife
-				aq.findAncestors(wife, ancestors, visited, depth+1)
+		}
+		return
+	}
+
+	// Fallback: Use indexed FAMC edges (Phase 1 optimization)
+	// This path is used if parent cache is not populated (shouldn't happen in normal flow)
+	for _, edge := range node.famcEdges {
+		if edge.Family != nil {
+			famNode := edge.Family
+			// Phase 1: Use indexed edges for O(1) access
+			if famNode.husbandEdge != nil {
+				if husband, ok := famNode.husbandEdge.To.(*IndividualNode); ok {
+					// Phase 3: Use cached nodeID directly - no lock acquisition!
+					husbandID := husband.BaseNode.nodeID
+					if husbandID != 0 {
+						ancestors[husbandID] = husband
+						// Phase 3: Pass husbandID through recursion
+						aq.findAncestors(husband, husbandID, ancestors, visited, depth+1)
+					}
+				}
+			}
+			if famNode.wifeEdge != nil {
+				if wife, ok := famNode.wifeEdge.To.(*IndividualNode); ok {
+					// Phase 3: Use cached nodeID directly - no lock acquisition!
+					wifeID := wife.BaseNode.nodeID
+					if wifeID != 0 {
+						ancestors[wifeID] = wife
+						// Phase 3: Pass wifeID through recursion
+						aq.findAncestors(wife, wifeID, ancestors, visited, depth+1)
+					}
+				}
 			}
 		}
 	}
@@ -161,18 +198,24 @@ func (aq *AncestorQuery) ExecuteWithPaths() ([]*AncestorPath, error) {
 		return nil, nil
 	}
 
-	ancestors := make(map[string]*IndividualNode)
-	visited := make(map[string]bool)
-	depths := make(map[string]int)
+	// Phase 3: Use cached nodeID directly (eliminates GetNodeID() lock overhead)
+	startNodeID := startNode.BaseNode.nodeID
+	if startNodeID == 0 {
+		return nil, nil
+	}
+
+	ancestors := make(map[uint32]*IndividualNode)
+	visited := make(map[uint32]bool)
+	depths := make(map[uint32]int)
 
 	// Add self if requested
 	if aq.options.IncludeSelf {
-		ancestors[startNode.ID()] = startNode
-		depths[startNode.ID()] = 0
+		ancestors[startNodeID] = startNode
+		depths[startNodeID] = 0
 	}
 
-	// Find ancestors with depth tracking
-	aq.findAncestorsWithDepth(startNode, ancestors, visited, depths, 0)
+	// Find ancestors with depth tracking (pass nodeID to avoid repeated lookups)
+	aq.findAncestorsWithDepth(startNode, startNodeID, ancestors, visited, depths, 0)
 
 	// Build paths and convert to AncestorPath
 	result := make([]*AncestorPath, 0, len(ancestors))
@@ -180,14 +223,18 @@ func (aq *AncestorQuery) ExecuteWithPaths() ([]*AncestorPath, error) {
 		if node.Individual != nil {
 			// Apply filter if provided
 			if aq.options.Filter == nil || aq.options.Filter(node.Individual) {
-				// Find path to this ancestor
-				path, err := aq.graph.ShortestPath(aq.startXrefID, id)
-				if err == nil {
-					result = append(result, &AncestorPath{
-						Ancestor: node.Individual,
-						Path:     path,
-						Depth:    depths[id],
-					})
+				// Convert uint32 ID back to XREF for path finding
+				xrefID := aq.graph.GetXrefFromID(id)
+				if xrefID != "" {
+					// Find path to this ancestor
+					path, err := aq.graph.ShortestPath(aq.startXrefID, xrefID)
+					if err == nil {
+						result = append(result, &AncestorPath{
+							Ancestor: node.Individual,
+							Path:     path,
+							Depth:    depths[id],
+						})
+					}
 				}
 			}
 		}
@@ -197,8 +244,11 @@ func (aq *AncestorQuery) ExecuteWithPaths() ([]*AncestorPath, error) {
 }
 
 // findAncestorsWithDepth recursively finds ancestors with depth tracking.
-func (aq *AncestorQuery) findAncestorsWithDepth(node *IndividualNode, ancestors map[string]*IndividualNode, visited map[string]bool, depths map[string]int, depth int) {
-	if visited[node.ID()] {
+// Optimized with Phase 1 (indexed edges, uint32 IDs), Phase 2 (cached parents), and Phase 3 (cached nodeID).
+// Phase 3: Accepts nodeID parameter to eliminate repeated GetNodeID() calls.
+func (aq *AncestorQuery) findAncestorsWithDepth(node *IndividualNode, nodeID uint32, ancestors map[uint32]*IndividualNode, visited map[uint32]bool, depths map[uint32]int, depth int) {
+	// Phase 3: nodeID already provided - no lookup needed!
+	if nodeID == 0 || visited[nodeID] {
 		return
 	}
 
@@ -207,23 +257,51 @@ func (aq *AncestorQuery) findAncestorsWithDepth(node *IndividualNode, ancestors 
 		return
 	}
 
-	visited[node.ID()] = true
+	visited[nodeID] = true
 
-	// Find parents via FAMC edges
-	for _, edge := range node.OutEdges() {
-		if edge.EdgeType == EdgeTypeFAMC && edge.Family != nil {
-			famNode := edge.Family
-			husband := famNode.getHusbandFromEdges()
-			if husband != nil {
-				ancestors[husband.ID()] = husband
-				depths[husband.ID()] = depth + 1
-				aq.findAncestorsWithDepth(husband, ancestors, visited, depths, depth+1)
+	// Phase 2: Use cached parents for O(1) access (fastest path)
+	if len(node.parents) > 0 {
+		for _, parent := range node.parents {
+			// Phase 3: Use cached nodeID directly - no lock acquisition!
+			parentID := parent.BaseNode.nodeID
+			if parentID != 0 {
+				ancestors[parentID] = parent
+				depths[parentID] = depth + 1
+				// Phase 3: Pass parentID through recursion to avoid repeated lookups
+				aq.findAncestorsWithDepth(parent, parentID, ancestors, visited, depths, depth+1)
 			}
-			wife := famNode.getWifeFromEdges()
-			if wife != nil {
-				ancestors[wife.ID()] = wife
-				depths[wife.ID()] = depth + 1
-				aq.findAncestorsWithDepth(wife, ancestors, visited, depths, depth+1)
+		}
+		return
+	}
+
+	// Fallback: Use indexed FAMC edges (Phase 1 optimization)
+	for _, edge := range node.famcEdges {
+		if edge.Family != nil {
+			famNode := edge.Family
+			// Phase 1: Use indexed edges for O(1) access
+			if famNode.husbandEdge != nil {
+				if husband, ok := famNode.husbandEdge.To.(*IndividualNode); ok {
+					// Phase 3: Use cached nodeID directly - no lock acquisition!
+					husbandID := husband.BaseNode.nodeID
+					if husbandID != 0 {
+						ancestors[husbandID] = husband
+						depths[husbandID] = depth + 1
+						// Phase 3: Pass husbandID through recursion
+						aq.findAncestorsWithDepth(husband, husbandID, ancestors, visited, depths, depth+1)
+					}
+				}
+			}
+			if famNode.wifeEdge != nil {
+				if wife, ok := famNode.wifeEdge.To.(*IndividualNode); ok {
+					// Phase 3: Use cached nodeID directly - no lock acquisition!
+					wifeID := wife.BaseNode.nodeID
+					if wifeID != 0 {
+						ancestors[wifeID] = wife
+						depths[wifeID] = depth + 1
+						// Phase 3: Pass wifeID through recursion
+						aq.findAncestorsWithDepth(wife, wifeID, ancestors, visited, depths, depth+1)
+					}
+				}
 			}
 		}
 	}

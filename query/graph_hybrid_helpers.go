@@ -40,9 +40,9 @@ type hybridNodeLoader struct {
 func (g *Graph) loadNodeFromHybrid(xrefID string, loader hybridNodeLoader) (GraphNode, error) {
 	debugLog("loadNodeFromHybrid: xrefID=%s, type=%s", xrefID, loader.typeName)
 	
-	// Safety check: ensure queryHelpers is available
-	if g.queryHelpers == nil {
-		debugLog("loadNodeFromHybrid: queryHelpers is nil")
+	// Safety check: ensure queryHelpers is available (SQLite or PostgreSQL)
+	if g.queryHelpers == nil && g.queryHelpersPostgres == nil {
+		debugLog("loadNodeFromHybrid: queryHelpers and queryHelpersPostgres are both nil")
 		return nil, nil
 	}
 	// Step 1: Check cache first
@@ -65,13 +65,22 @@ func (g *Graph) loadNodeFromHybrid(xrefID string, loader hybridNodeLoader) (Grap
 		debugLog("loadNodeFromHybrid: found xrefToID in memory: %s -> %d", xrefID, nodeID)
 	} else {
 		g.mu.RUnlock()
-		debugLog("loadNodeFromHybrid: xrefID not in memory map, querying SQLite: %s", xrefID)
-		// Not in memory, query SQLite
+		debugLog("loadNodeFromHybrid: xrefID not in memory map, querying database: %s", xrefID)
+		// Not in memory, query database (SQLite or PostgreSQL)
+		var queryHelper HybridQueryHelper
+		if g.queryHelpersPostgres != nil {
+			queryHelper = g.queryHelpersPostgres
+		} else if g.queryHelpers != nil {
+			queryHelper = g.queryHelpers
+		} else {
+			return nil, nil
+		}
+
 		if g.hybridCache != nil {
 			if cachedID, found := g.hybridCache.GetXrefToID(xrefID); found {
 				nodeID = cachedID
 			} else {
-				nodeID, err = g.queryHelpers.FindByXref(xrefID)
+				nodeID, err = queryHelper.FindByXref(xrefID)
 				if err != nil {
 					debugLog("loadNodeFromHybrid: FindByXref error: %v", err)
 					// FindByXref returns (0, nil) when not found, so any error is a real error
@@ -82,12 +91,12 @@ func (g *Graph) loadNodeFromHybrid(xrefID string, loader hybridNodeLoader) (Grap
 					debugLog("loadNodeFromHybrid: FindByXref returned 0 (not found): %s", xrefID)
 					return nil, nil // Not found - return nil node and nil error (matches original behavior)
 				}
-				debugLog("loadNodeFromHybrid: found in SQLite: %s -> %d", xrefID, nodeID)
+				debugLog("loadNodeFromHybrid: found in database: %s -> %d", xrefID, nodeID)
 				// Cache the mapping
 				g.hybridCache.SetXrefToID(xrefID, nodeID)
 			}
 		} else {
-			nodeID, err = g.queryHelpers.FindByXref(xrefID)
+			nodeID, err = queryHelper.FindByXref(xrefID)
 			if err != nil {
 				// FindByXref returns (0, nil) when not found, so any error is a real error
 				// But to match original behavior, return nil silently
@@ -113,12 +122,16 @@ func (g *Graph) loadNodeFromHybrid(xrefID string, loader hybridNodeLoader) (Grap
 	}
 	debugLog("loadNodeFromHybrid: node not in memory, loading from BadgerDB: %s (nodeID=%d)", xrefID, nodeID)
 
-	// Step 4: Load from BadgerDB
-	if g.hybridStorage == nil {
-		debugLog("loadNodeFromHybrid: hybridStorage is nil")
+	// Step 4: Load from BadgerDB (works with both SQLite and PostgreSQL storage)
+	var badgerDB *badger.DB
+	if g.hybridStoragePostgres != nil {
+		badgerDB = g.hybridStoragePostgres.BadgerDB()
+	} else if g.hybridStorage != nil {
+		badgerDB = g.hybridStorage.BadgerDB()
+	} else {
+		debugLog("loadNodeFromHybrid: hybridStorage and hybridStoragePostgres are both nil")
 		return nil, nil
 	}
-	badgerDB := g.hybridStorage.BadgerDB()
 	key := fmt.Sprintf("node:%d", nodeID)
 	debugLog("loadNodeFromHybrid: loading from BadgerDB with key: %s", key)
 

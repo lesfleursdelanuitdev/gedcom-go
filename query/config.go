@@ -122,6 +122,13 @@ type DatabaseConfig struct {
 	SQLiteMaxOpenConns int `json:"sqlite_max_open_conns"` // Default: 10
 	SQLiteMaxIdleConns int `json:"sqlite_max_idle_conns"` // Default: 5
 
+	// PostgreSQL configuration
+	PostgreSQLMaxOpenConns    int           `json:"postgresql_max_open_conns"`     // Default: 25
+	PostgreSQLMaxIdleConns     int           `json:"postgresql_max_idle_conns"`     // Default: 10
+	PostgreSQLConnMaxLifetime  time.Duration `json:"postgresql_conn_max_lifetime"`  // Default: 5m
+	PostgreSQLConnMaxIdleTime  time.Duration `json:"postgresql_conn_max_idle_time"`  // Default: 1m
+	PostgreSQLDatabaseURL      string        `json:"postgresql_database_url"`       // Default: from DATABASE_URL env var
+
 	// BadgerDB configuration
 	BadgerDBValueLogFileSize int64 `json:"badgerdb_value_log_file_size"` // Default: 1GB
 }
@@ -142,9 +149,14 @@ func DefaultConfig() *Config {
 			QueryTimeout:       1 * time.Minute,
 		},
 		Database: DatabaseConfig{
-			SQLiteMaxOpenConns:    10,
-			SQLiteMaxIdleConns:    5,
-			BadgerDBValueLogFileSize: 1 << 30, // 1GB
+			SQLiteMaxOpenConns:         10,
+			SQLiteMaxIdleConns:         5,
+			PostgreSQLMaxOpenConns:     25,
+			PostgreSQLMaxIdleConns:     10,
+			PostgreSQLConnMaxLifetime:  5 * time.Minute,
+			PostgreSQLConnMaxIdleTime:  1 * time.Minute,
+			PostgreSQLDatabaseURL:      "", // Will use DATABASE_URL env var if empty
+			BadgerDBValueLogFileSize:   1 << 30, // 1GB
 		},
 	}
 }
@@ -240,6 +252,18 @@ func (c *Config) validateAndSetDefaults() {
 	}
 	if c.Database.SQLiteMaxIdleConns <= 0 {
 		c.Database.SQLiteMaxIdleConns = defaults.Database.SQLiteMaxIdleConns
+	}
+	if c.Database.PostgreSQLMaxOpenConns <= 0 {
+		c.Database.PostgreSQLMaxOpenConns = defaults.Database.PostgreSQLMaxOpenConns
+	}
+	if c.Database.PostgreSQLMaxIdleConns <= 0 {
+		c.Database.PostgreSQLMaxIdleConns = defaults.Database.PostgreSQLMaxIdleConns
+	}
+	if c.Database.PostgreSQLConnMaxLifetime <= 0 {
+		c.Database.PostgreSQLConnMaxLifetime = defaults.Database.PostgreSQLConnMaxLifetime
+	}
+	if c.Database.PostgreSQLConnMaxIdleTime <= 0 {
+		c.Database.PostgreSQLConnMaxIdleTime = defaults.Database.PostgreSQLConnMaxIdleTime
 	}
 	if c.Database.BadgerDBValueLogFileSize <= 0 {
 		c.Database.BadgerDBValueLogFileSize = defaults.Database.BadgerDBValueLogFileSize

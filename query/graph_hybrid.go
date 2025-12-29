@@ -255,10 +255,18 @@ func (g *Graph) getEventFromHybrid(eventID string) *EventNode {
 	return eventNode
 }
 
-// loadEdgesFromHybrid loads edges for a node from BadgerDB
+// loadEdgesFromHybrid loads edges for a node from BadgerDB (works with both SQLite and PostgreSQL storage)
 func (g *Graph) loadEdgesFromHybrid(nodeID uint32, node GraphNode) {
 	debugLog("loadEdgesFromHybrid: loading edges for nodeID=%d, node=%s", nodeID, node.ID())
-	badgerDB := g.hybridStorage.BadgerDB()
+	var badgerDB *badger.DB
+	if g.hybridStoragePostgres != nil {
+		badgerDB = g.hybridStoragePostgres.BadgerDB()
+	} else if g.hybridStorage != nil {
+		badgerDB = g.hybridStorage.BadgerDB()
+	} else {
+		debugLog("loadEdgesFromHybrid: hybridStorage and hybridStoragePostgres are both nil")
+		return
+	}
 	key := fmt.Sprintf("edges:%d:out", nodeID)
 	debugLog("loadEdgesFromHybrid: looking for edges with key: %s", key)
 
@@ -279,8 +287,17 @@ func (g *Graph) loadEdgesFromHybrid(nodeID uint32, node GraphNode) {
 			// Convert EdgeData to Edge objects and add to node
 			for i, edgeData := range edges {
 				debugLog("loadEdgesFromHybrid: processing edge %d/%d: type=%s, toID=%d", i+1, len(edges), edgeData.EdgeType, edgeData.ToID)
-				// Get target node
-				toXref, err := g.queryHelpers.FindXrefByID(edgeData.ToID)
+				// Get target node (use PostgreSQL or SQLite helpers)
+				var toXref string
+				var err error
+				if g.queryHelpersPostgres != nil {
+					toXref, err = g.queryHelpersPostgres.FindXrefByID(edgeData.ToID)
+				} else if g.queryHelpers != nil {
+					toXref, err = g.queryHelpers.FindXrefByID(edgeData.ToID)
+				} else {
+					debugLog("loadEdgesFromHybrid: no query helpers available")
+					continue
+				}
 				if err != nil || toXref == "" {
 					debugLog("loadEdgesFromHybrid: failed to find xref for toID=%d: err=%v, xref=%s", edgeData.ToID, err, toXref)
 					continue
@@ -339,7 +356,12 @@ func (g *Graph) loadEdgesFromHybrid(nodeID uint32, node GraphNode) {
 				// Create edge
 				var edge *Edge
 				if edgeData.FamilyID != 0 {
-					famXref, _ := g.queryHelpers.FindXrefByID(edgeData.FamilyID)
+					var famXref string
+					if g.queryHelpersPostgres != nil {
+						famXref, _ = g.queryHelpersPostgres.FindXrefByID(edgeData.FamilyID)
+					} else if g.queryHelpers != nil {
+						famXref, _ = g.queryHelpers.FindXrefByID(edgeData.FamilyID)
+					}
 					if famXref != "" {
 						famNode := g.GetFamily(famXref)
 						if famNode != nil {
