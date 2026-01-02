@@ -2,13 +2,9 @@ package duplicate
 
 import (
 	"fmt"
-	"os"
 	"runtime"
-	"testing"
-	"time"
 
 	"github.com/lesfleursdelanuitdev/ligneous-gedcom/types"
-	"github.com/lesfleursdelanuitdev/ligneous-gedcom/query"
 )
 
 // generateLargeTreeForDuplicate creates a tree with n individuals for duplicate testing

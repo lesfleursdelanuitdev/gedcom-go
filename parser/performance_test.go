@@ -4,10 +4,6 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-	"testing"
-	"time"
-
-	"github.com/lesfleursdelanuitdev/ligneous-gedcom/query"
 )
 
 // generateLargeGEDCOMFile generates a GEDCOM file with n individuals
