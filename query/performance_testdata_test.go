@@ -2,6 +2,7 @@ package query
 
 import (
 	"fmt"
+	"os"
 	"runtime"
 	"sort"
 	"testing"
@@ -253,6 +254,10 @@ func printQueryPerformanceReport(metrics *QueryMetrics) {
 
 // TestQueryPerformance_AllTestDataFiles tests query performance on all test data files
 func TestQueryPerformance_AllTestDataFiles(t *testing.T) {
+	if os.Getenv("ENABLE_PERFORMANCE_TESTS") == "" {
+		t.Skip("Skipping performance test - set ENABLE_PERFORMANCE_TESTS=1 to run")
+	}
+
 	testFiles := []string{
 		"xavier.ged",
 		"gracis.ged",

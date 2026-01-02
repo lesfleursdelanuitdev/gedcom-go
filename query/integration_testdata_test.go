@@ -12,7 +12,10 @@ func TestIntegration_RealData_BasicQueries(t *testing.T) {
 		"xavier.ged",
 		"gracis.ged",
 		"tree1.ged",
-		"royal92.ged",
+	}
+	// Only test larger files if not in short mode
+	if !testing.Short() {
+		testFiles = append(testFiles, "royal92.ged")
 		// pres2020.ged is large, test separately
 	}
 
