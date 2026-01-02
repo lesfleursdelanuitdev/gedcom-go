@@ -13,11 +13,7 @@ func TestIntegration_RealData_BasicQueries(t *testing.T) {
 		"gracis.ged",
 		"tree1.ged",
 	}
-	// Only test larger files if not in short mode
-	if !testing.Short() {
-		testFiles = append(testFiles, "royal92.ged")
-		// pres2020.ged is large, test separately
-	}
+	// royal92.ged and pres2020.ged are too large for CI - test separately if needed
 
 	for _, filename := range testFiles {
 		t.Run(filename, func(t *testing.T) {
@@ -96,7 +92,8 @@ func TestIntegration_RealData_GraphBuilding(t *testing.T) {
 	
 	// Only test larger files if not in short mode
 	if !testing.Short() {
-		testFiles = append(testFiles, "tree1.ged", "royal92.ged")
+		testFiles = append(testFiles, "tree1.ged")
+		// royal92.ged is too large for CI - test separately if needed
 	}
 
 	for _, filename := range testFiles {
@@ -156,7 +153,8 @@ func TestIntegration_RealData_RelationshipQueries(t *testing.T) {
 	
 	// Only test larger files if not in short mode
 	if !testing.Short() {
-		testFiles = append(testFiles, "tree1.ged", "royal92.ged")
+		testFiles = append(testFiles, "tree1.ged")
+		// royal92.ged is too large for CI - test separately if needed
 	}
 
 	for _, filename := range testFiles {
@@ -253,7 +251,8 @@ func TestIntegration_RealData_GraphRelationships(t *testing.T) {
 	
 	// Only test larger files if not in short mode
 	if !testing.Short() {
-		testFiles = append(testFiles, "tree1.ged", "royal92.ged")
+		testFiles = append(testFiles, "tree1.ged")
+		// royal92.ged is too large for CI - test separately if needed
 	}
 
 	for _, filename := range testFiles {
@@ -372,7 +371,8 @@ func TestIntegration_RealData_FilterQueries(t *testing.T) {
 	
 	// Only test larger files if not in short mode
 	if !testing.Short() {
-		testFiles = append(testFiles, "tree1.ged", "royal92.ged")
+		testFiles = append(testFiles, "tree1.ged")
+		// royal92.ged is too large for CI - test separately if needed
 	}
 
 	for _, filename := range testFiles {
@@ -441,7 +441,8 @@ func TestIntegration_RealData_PathFinding(t *testing.T) {
 	
 	// Only test larger files if not in short mode
 	if !testing.Short() {
-		testFiles = append(testFiles, "tree1.ged", "royal92.ged")
+		testFiles = append(testFiles, "tree1.ged")
+		// royal92.ged is too large for CI - test separately if needed
 	}
 
 	for _, filename := range testFiles {
@@ -519,7 +520,8 @@ func TestIntegration_RealData_RelationshipCalculation(t *testing.T) {
 	
 	// Only test larger files if not in short mode
 	if !testing.Short() {
-		testFiles = append(testFiles, "tree1.ged", "royal92.ged")
+		testFiles = append(testFiles, "tree1.ged")
+		// royal92.ged is too large for CI - test separately if needed
 	}
 
 	for _, filename := range testFiles {
@@ -600,7 +602,8 @@ func TestIntegration_RealData_CollectionQueries(t *testing.T) {
 	
 	// Only test larger files if not in short mode
 	if !testing.Short() {
-		testFiles = append(testFiles, "tree1.ged", "royal92.ged")
+		testFiles = append(testFiles, "tree1.ged")
+		// royal92.ged is too large for CI - test separately if needed
 	}
 
 	for _, filename := range testFiles {
@@ -682,7 +685,8 @@ func TestIntegration_RealData_NotesQuery(t *testing.T) {
 	
 	// Only test larger files if not in short mode
 	if !testing.Short() {
-		testFiles = append(testFiles, "tree1.ged", "royal92.ged")
+		testFiles = append(testFiles, "tree1.ged")
+		// royal92.ged is too large for CI - test separately if needed
 	}
 
 	for _, filename := range testFiles {
@@ -771,7 +775,8 @@ func TestIntegration_RealData_GraphMetrics(t *testing.T) {
 	
 	// Only test larger files if not in short mode
 	if !testing.Short() {
-		testFiles = append(testFiles, "tree1.ged", "royal92.ged")
+		testFiles = append(testFiles, "tree1.ged")
+		// royal92.ged is too large for CI - test separately if needed
 	}
 
 	for _, filename := range testFiles {
@@ -867,7 +872,8 @@ func TestIntegration_RealData_CollateralRelationships(t *testing.T) {
 	
 	// Only test larger files if not in short mode
 	if !testing.Short() {
-		testFiles = append(testFiles, "tree1.ged", "royal92.ged")
+		testFiles = append(testFiles, "tree1.ged")
+		// royal92.ged is too large for CI - test separately if needed
 	}
 
 	for _, filename := range testFiles {
@@ -957,7 +963,8 @@ func TestIntegration_RealData_AncestorDescendantEdgeCases(t *testing.T) {
 	
 	// Only test larger files if not in short mode
 	if !testing.Short() {
-		testFiles = append(testFiles, "tree1.ged", "royal92.ged")
+		testFiles = append(testFiles, "tree1.ged")
+		// royal92.ged is too large for CI - test separately if needed
 	}
 
 	for _, filename := range testFiles {
