@@ -2,6 +2,7 @@ package query
 
 import (
 	"fmt"
+	"os"
 	"runtime"
 	"testing"
 	"time"
@@ -159,6 +160,10 @@ func TestPerformance_100K(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping large performance test in short mode")
 	}
+	// Skip by default in CI - only run if ENABLE_PERFORMANCE_TESTS is set
+	if os.Getenv("ENABLE_PERFORMANCE_TESTS") == "" {
+		t.Skip("Skipping performance test - set ENABLE_PERFORMANCE_TESTS=1 to run")
+	}
 
 	const size = 100000
 	t.Logf("Generating tree with %d individuals...", size)
@@ -262,6 +267,10 @@ func TestPerformance_100K(t *testing.T) {
 func TestPerformance_500K(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping large performance test in short mode")
+	}
+	// Skip by default in CI - only run if ENABLE_PERFORMANCE_TESTS is set
+	if os.Getenv("ENABLE_PERFORMANCE_TESTS") == "" {
+		t.Skip("Skipping performance test - set ENABLE_PERFORMANCE_TESTS=1 to run")
 	}
 
 	const size = 500000

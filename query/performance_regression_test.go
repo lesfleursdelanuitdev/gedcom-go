@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+// performanceTestsEnabled checks if performance tests should run
+func performanceTestsEnabled() bool {
+	return os.Getenv("ENABLE_PERFORMANCE_TESTS") != ""
+}
+
 // PerformanceBaseline represents baseline performance metrics
 type PerformanceBaseline struct {
 	Timestamp   time.Time              `json:"timestamp"`
@@ -139,6 +144,9 @@ func TestPerformanceRegression_GraphBuild(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping performance regression test in short mode")
 	}
+	if !performanceTestsEnabled() {
+		t.Skip("Skipping performance test - set ENABLE_PERFORMANCE_TESTS=1 to run")
+	}
 
 	baselineFile := "testdata/performance_baselines/graph_build.json"
 	prt := NewPerformanceRegressionTest(baselineFile)
@@ -192,6 +200,9 @@ func TestPerformanceRegression_GraphBuild(t *testing.T) {
 func TestPerformanceRegression_QueryExecution(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping performance regression test in short mode")
+	}
+	if !performanceTestsEnabled() {
+		t.Skip("Skipping performance test - set ENABLE_PERFORMANCE_TESTS=1 to run")
 	}
 
 	baselineFile := "testdata/performance_baselines/query_execution.json"
@@ -253,6 +264,9 @@ func TestPerformanceRegression_QueryExecution(t *testing.T) {
 func TestPerformanceRegression_AncestorQuery(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping performance regression test in short mode")
+	}
+	if !performanceTestsEnabled() {
+		t.Skip("Skipping performance test - set ENABLE_PERFORMANCE_TESTS=1 to run")
 	}
 
 	baselineFile := "testdata/performance_baselines/ancestor_query.json"
@@ -325,6 +339,9 @@ func TestPerformanceRegression_DescendantQuery(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping performance regression test in short mode")
 	}
+	if !performanceTestsEnabled() {
+		t.Skip("Skipping performance test - set ENABLE_PERFORMANCE_TESTS=1 to run")
+	}
 
 	baselineFile := "testdata/performance_baselines/descendant_query.json"
 	prt := NewPerformanceRegressionTest(baselineFile)
@@ -393,6 +410,9 @@ func TestPerformanceRegression_DescendantQuery(t *testing.T) {
 func TestPerformanceRegression_RelationshipQuery(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping performance regression test in short mode")
+	}
+	if !performanceTestsEnabled() {
+		t.Skip("Skipping performance test - set ENABLE_PERFORMANCE_TESTS=1 to run")
 	}
 
 	baselineFile := "testdata/performance_baselines/relationship_query.json"

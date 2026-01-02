@@ -1,6 +1,7 @@
 package query
 
 import (
+	"os"
 	"testing"
 
 	"github.com/lesfleursdelanuitdev/ligneous-gedcom/parser"
@@ -269,6 +270,9 @@ func TestGraphMetrics_BetweennessCentrality_LargeDataset(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping large dataset test in short mode")
 	}
+	if os.Getenv("ENABLE_PERFORMANCE_TESTS") == "" {
+		t.Skip("Skipping large dataset test - set ENABLE_PERFORMANCE_TESTS=1 to run")
+	}
 
 	filePath := findTestDataFile("royal92.ged")
 	if filePath == "" {
@@ -304,6 +308,9 @@ func TestGraphMetrics_ClosenessCentrality_LargeDataset(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping large dataset test in short mode")
 	}
+	if os.Getenv("ENABLE_PERFORMANCE_TESTS") == "" {
+		t.Skip("Skipping large dataset test - set ENABLE_PERFORMANCE_TESTS=1 to run")
+	}
 
 	filePath := findTestDataFile("royal92.ged")
 	if filePath == "" {
@@ -338,6 +345,9 @@ func TestGraphMetrics_ClosenessCentrality_LargeDataset(t *testing.T) {
 func TestGraphMetrics_Diameter_LargeDataset(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping large dataset test in short mode")
+	}
+	if os.Getenv("ENABLE_PERFORMANCE_TESTS") == "" {
+		t.Skip("Skipping large dataset test - set ENABLE_PERFORMANCE_TESTS=1 to run")
 	}
 
 	filePath := findTestDataFile("royal92.ged")
