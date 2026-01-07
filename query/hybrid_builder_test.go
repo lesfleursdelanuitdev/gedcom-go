@@ -117,11 +117,3 @@ func TestBuildGraphHybrid_Close(t *testing.T) {
 	}
 }
 
-// Close closes the graph and its hybrid storage
-func (g *Graph) Close() error {
-	if g.hybridStorage != nil {
-		return g.hybridStorage.Close()
-	}
-	return nil
-}
-
